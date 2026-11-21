@@ -44,16 +44,19 @@
   body {
     font-family: 'Nunito', system-ui, sans-serif;
     color: var(--ink);
-    background:
-      radial-gradient(60% 45% at 8% 0%, rgba(248, 215, 213, .75), transparent 70%),
-      radial-gradient(55% 40% at 100% 10%, rgba(212, 236, 220, .85), transparent 70%),
-      radial-gradient(70% 45% at 50% 110%, rgba(217, 237, 245, .9), transparent 70%),
-      var(--bg);
-    background-attachment: fixed;
+    background: var(--bg);
     overflow-x: hidden;
     padding: 54px 16px 64px;
   }
 
+  /* Farbverlauf als feste Ebene: wird einmal gemalt statt bei jedem Scrollen */
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(60% 45% at 8% 0%, rgba(248, 215, 213, .75), transparent 70%),
+      radial-gradient(55% 40% at 100% 10%, rgba(212, 236, 220, .85), transparent 70%),
+      radial-gradient(70% 45% at 50% 110%, rgba(217, 237, 245, .9), transparent 70%);
+  }
   #snow { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
 
   /* ---------- Lichterkette ---------- */
@@ -67,7 +70,7 @@
   }
   .lights span {
     width: 11px; height: 17px; margin-top: 12px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-    position: relative; animation: blink 2.2s infinite alternate ease-in-out;
+    position: relative; animation: blink 2.2s infinite alternate ease-in-out; will-change: opacity;
     background: var(--c); box-shadow: 0 3px 14px 2px var(--c);
   }
   .lights span::before {
@@ -78,7 +81,7 @@
   .lights span:nth-child(4n+2) { --c: #f6dc8f; animation-delay: .5s; }
   .lights span:nth-child(4n+3) { --c: #9fd6b2; animation-delay: 1s; }
   .lights span:nth-child(4n+4) { --c: #a9d6ea; animation-delay: 1.5s; }
-  @keyframes blink { 0% { opacity: 1; } 100% { opacity: .45; box-shadow: none; } }
+  @keyframes blink { 0% { opacity: 1; } 100% { opacity: .45; } }
 
   /* ---------- Kopf ---------- */
   .hero {
@@ -91,6 +94,7 @@
   .hero-text { grid-area: text; text-align: center; }
   .hero-lurch { width: 100%; max-width: 220px; height: auto; justify-self: center; filter: drop-shadow(0 12px 14px rgba(47, 90, 69, .18)); }
   .hero-lurch.l1 { grid-area: l1; animation: float 5s ease-in-out infinite; }
+  .hero-lurch { will-change: transform; }
   .hero-lurch.l2 { grid-area: l2; max-width: 250px; animation: float 5.5s ease-in-out infinite .8s; }
   @keyframes float { 50% { transform: translateY(-8px) rotate(-2deg); } }
 
@@ -100,7 +104,7 @@
   }
   h1 {
     font-family: 'Fredoka', 'Nunito', system-ui, sans-serif; font-weight: 700;
-    font-size: clamp(2.1rem, 5.4vw, 3.4rem); line-height: 1.02; letter-spacing: -.01em;
+    font-size: clamp(1.7rem, 4.2vw, 2.6rem); line-height: 1.05; letter-spacing: -.01em;
     margin: 12px 0 8px; color: var(--green-ink);
   }
   h1 span { color: var(--rose-strong); display: block; }
@@ -126,10 +130,8 @@
     gap: 14px;
     padding: 22px;
     border-radius: 32px;
-    background: rgba(255, 255, 255, .62);
+    background: rgba(255, 255, 255, .78);
     border: 1px solid rgba(255, 255, 255, .9);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
     box-shadow: var(--shadow-lift);
   }
   @media (max-width: 700px) { .calendar { grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 14px; border-radius: 24px; } }
@@ -212,15 +214,18 @@
     transform: rotateY(-115deg); opacity: 0; pointer-events: none;
     transition: transform .9s cubic-bezier(.6,-0.1,.3,1.2), opacity .35s ease .55s;
   }
+  /* Während des Auf-/Zuschwingens bleibt die Tür in ihrem Feld und überdeckt keine Nachbartüren */
+  .slot.swing { clip-path: inset(0 round var(--radius)); z-index: 2; }
   .slot.open .inside { cursor: pointer; transition: transform .2s, border-color .2s; }
   .slot.open .inside:hover { transform: scale(1.04); border-color: var(--rose); }
-  .slot.today .door .face { animation: glow 2s ease-in-out infinite; }
+  .slot.today::after {
+    content: ""; position: absolute; inset: 0; border-radius: var(--radius); pointer-events: none;
+    box-shadow: 0 0 0 6px rgba(227, 129, 125, .35); opacity: 0;
+    animation: glow 2s ease-in-out infinite; will-change: opacity;
+  }
   .slot.locked .door .face { filter: saturate(.75); opacity: .85; }
   .slot.shake .door { animation: shake .45s; }
-  @keyframes glow {
-    0%,100% { box-shadow: 0 0 0 0 rgba(227, 129, 125, .0), 0 6px 16px rgba(47, 90, 69, .12); }
-    50%     { box-shadow: 0 0 0 6px rgba(227, 129, 125, .35), 0 6px 16px rgba(47, 90, 69, .12); }
-  }
+  @keyframes glow { 50% { opacity: 1; } }
   @keyframes shake {
     0%,100% { transform: translateX(0); }
     20% { transform: translateX(-6px) rotate(-2deg); }
@@ -230,7 +235,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero-lurch, .lights span { animation: none !important; }
+    .hero-lurch, .lights span, .slot.today::after { animation: none !important; }
   }
 
   /* ---------- Popup ---------- */
@@ -382,7 +387,7 @@
   <img class="hero-lurch l1" src="bilder/lurch-1.webp" alt="Lurch 1 mit Weihnachtsmütze">
   <div class="hero-text">
     <span class="eyebrow">Seerosenhof · Raum 464</span>
-    <h1>Lurchi-<span>Adventskalender</span></h1>
+    <h1>Two and the half Lurchis<span>Adventskalender</span></h1>
     <p class="subtitle">24 Türchen bis zur Weihnachtsinspektion</p>
     <div class="countdown" id="countdown"></div>
   </div>
@@ -457,7 +462,7 @@ const LETTER = [
   "Mit freundlichen Grüßen, Herr Reiher",
 ];
 
-const ACT1 = "Akt 1";
+const ACT1 = "Akt 1: Der Brief";
 const ACT2 = "Akt 2: Die Vorbereitung";
 const ACT3 = "Akt 3: Der Verdacht";
 const ACT4 = "Akt 4: Die Wende";
@@ -468,7 +473,7 @@ const DOORS = [
   { emoji: "✉️", title: "Einschreiben", act: ACT1, focus: "alle drei",
     story: [
       "Der Seerosenhof ist ein Wohnhaus am Teich. Im vierten Stock, in Raum 464, wohnen drei Lurche. Es ist der 1. Dezember, früh am Morgen.",
-      "Es klopft einmal. Als Lurch 1 die Tür öffnet, ist niemand mehr zu sehen. Auf der Fußmatte liegt ein Brief. Das war der Wasserläufer, der Paketbote des Hauses. Er ist der Schnellste im ganzen Teich. Zuverlässig ist er nicht. Der Brief wurde offenbar im Vorbeilaufen geworfen.",
+      "Es klopft einmal. Als Lurch 1 die Tür öffnet, ist niemand mehr zu sehen. Auf der Fußmatte liegt ein Brief. Das war der Wasserläufer, der Lieferant des Hauses. Er ist der Schnellste im ganzen Teich. Zuverlässig ist er nicht. Der Brief wurde offenbar im Vorbeilaufen geworfen.",
       ["Lurch 1", "„Ein Einschreiben vom Vermieter, Herrn Reiher. Nur zur Sicherheit: Setzt euch alle.“"],
       ["Lurch 2", "„Ich sitze schon.“"],
       "Der Brief lautet:",
@@ -576,13 +581,13 @@ const DOORS = [
 
   /* ---------- 4 ---------- */
   { emoji: "❄️", title: "Die Schneeflocke", act: ACT1, focus: "der Halbe",
-    image: "bilder/tuer-04-schneelurch.webp", imageAlt: "Die drei Lurche bauen nachts im Schnee einen Schneemann",
+    image: "bilder/tuer-04-schneelurch.webp", imageAlt: "Die drei Lurche bauen nachts im Schnee einen Schneelurch",
     story: [
       "Mitten in der Nacht wacht der Halbe auf. Das Fenster ist beschlagen, und draußen fällt zum ersten Mal Schnee. Er springt aus dem Bett und rennt in Lurch 2s Zimmer.",
       ["Der Halbe", "„Es schneit! Wach auf!“"],
       ["Lurch 2", "„Es ist drei Uhr.“"],
       ["Der Halbe", "„Aber es schneit!“"],
-      "Lurch 2 setzt sich auf. Er setzt seine Mütze auf und legt den Schal um den Hals.",
+      "Lurch 2 richtet sich im Bett auf. Er setzt seine Mütze auf und legt den Schal um den Hals.",
       ["Der Halbe", "„Was passiert eigentlich mit uns, wenn es friert?“"],
       ["Lurch 2", "„Das ist eine sehr gute Frage. Wir sind wechselwarm. Unsere Körpertemperatur hängt von der Umgebung ab. Wird es kalt, werden wir langsamer, bis wir uns kaum noch bewegen. Das nennt man Winterstarre.“"],
       ["Der Halbe", "„Also schlafen wir nicht?“"],
@@ -632,7 +637,7 @@ const DOORS = [
     ],
     interaction: { kind: "choice", title: "Wer macht was?",
       prompt: ["Verteile die drei Aufgaben Dekoration, Essen und Putzen auf die drei Lurche. Es gibt neun Möglichkeiten. Probiere sie aus."],
-      response: "Lurch 1 liest sie vor, nickt ernst und sagt: „Das ist eine sehr gute Idee.“",
+      response: "Lurch 1 trägt deine Wahl auf dem Plakat ein, nickt ernst und sagt: „Das ist eine sehr gute Idee.“",
       options: [
         { label: "Lurch 1 macht das Essen",
           response: "Pannenmeldung: Lurch 1 hat sechs Notfallgerichte vorbereitet und vergessen, ein normales Essen zu kochen." },
@@ -660,7 +665,7 @@ const DOORS = [
   /* ---------- 6 ---------- */
   { emoji: "📜", title: "Frau Krötes Zettel", act: ACT1, focus: "alle drei",
     story: [
-      "An der Wohnungstür hängt eine Nachricht von Frau Kröte, die Nachbarin aus Raum 435. Die Nachricht ist drei Seiten lang.",
+      "An der Wohnungstür hängt eine Nachricht von Frau Kröte, der Nachbarin aus Raum 435. Sie ist drei Seiten lang.",
       "Der Anfang lautet:",
       { label: "Nachricht an der Tür, Seite 1 von 3", note: ["An alle Bewohner des Hauses, insbesondere die der Wohnung 464, im Hinblick auf die bevorstehende Weihnachtszeit und die damit verbundenen Pflichten, die sich aus der Hausordnung ergeben, sehe ich mich veranlasst, einige Punkte noch einmal ausdrücklich in Erinnerung zu rufen. Dies erscheint insbesondere deshalb angebracht, weil es in der Vergangenheit, ich möchte nicht sagen regelmäßig, aber doch wiederholt, zu gewissen Missverständnissen hinsichtlich der einzuhaltenden Pflichten während der Feiertage gekommen ist. Ich möchte daher ausdrücklich darum bitten, die geltende Hausordnung entsprechend zu beachten und insbesondere dort die notwendige Bereitschaft und Rücksichtnahme zu zeigen, wo es um die Belange des geordneten Zusammenlebens, die gemeinsame Nutzung der vorgesehenen Bereiche und die Interessen der gesamten Hausgemeinschaft geht und nicht zuletzt darum, einen angemessenen Beitrag zur besinnlichen Atmosphäre der Weihnachtszeit zu leisten. …"] },
       "Es folgen zwei weitere Seiten in demselben Stil.",
@@ -669,7 +674,7 @@ const DOORS = [
       ["Der Halbe", "„Ich habe schon den ersten Satz vergessen, bevor ich den zweiten angefangen habe. Ich weiß nicht, was die jetzt von uns will!“"],
       ["Lurch 2", "„Rein hypothetisch ist es eine Aufgabe. Aber ich weiß nicht, welche.“"],
       "Sie gehen zu Raum 435 und klopfen. Frau Kröte öffnet einen Spalt breit.",
-      ["Frau Kröte", "„Haben Sie meine Nachricht gelesen?“"],
+      ["Frau Kröte", "„Habt ihr meine Nachricht gelesen?“"],
       ["Lurch 1", "„Ja, mehrmals. Wir haben eine Frage.“"],
       ["Frau Kröte", "„Das steht alles in meiner Nachricht.“"],
       "Sie schließt die Tür. Lurch 1 klopft noch einmal.",
@@ -680,7 +685,7 @@ const DOORS = [
     interaction: { kind: "quiz", title: "Welcher Satz fasst die Nachricht zusammen?",
       questions: [
         { options: [
-          "„Bitte schmücken Sie die Gemeinschaftsflächen.“",
+          "„Bitte schmückt die Gemeinschaftsflächen.“",
           "„Das Haus gehört mir, also nerve ich alle, bis sie gehen.“",
           "„Bitte keine Kerzen, außer sie sind elektrisch, aber nur auf der Fensterbank.“",
           "„Ich habe vergessen, was ich schreiben wollte.“",
@@ -688,7 +693,7 @@ const DOORS = [
       ],
       solution: [
         "Lösung: a.",
-        "Was der Zettel nicht verrät: welche Gemeinschaftsflächen? Frau Kröte erwähnt diese wichtige Info nirgends.",
+        "Was die Nachricht nicht verrät: Welche Gemeinschaftsflächen sind gemeint? Das schreibt Frau Kröte nirgends.",
       ],
     },
   },
@@ -706,14 +711,14 @@ const DOORS = [
       ["Lurch 2", "„Ich kümmere mich darum.“"],
       "Er sagt es zu leise. Im Dunkeln sieht man nur noch den roten Schal, den er bis über die Nase gezogen hat. Er redet schneller als sonst und verliert Wörter.",
       ["Lurch 2", "„Es lag nicht … ich meine, rein hypothetisch war die Sicherung … ich hatte alles geprüft …“"],
-      ["Der Halbe", "„Es ist so dunkel das ich nicht hören kann.“"],
-      ["Lurch 1", "„Das Hilft uns jetzt auch nicht weiter.“"],
-      ["Der Halbe", "„Was!? Es ist so dunkel das ich dich nicht verstehen kann.“"],
+      ["Der Halbe", "„Es ist so dunkel, dass ich nichts hören kann.“"],
+      ["Lurch 1", "„Das hilft uns jetzt auch nicht weiter.“"],
+      ["Der Halbe", "„Was?! Es ist so dunkel, dass ich dich nicht verstehen kann.“"],
       ["Lurch 2", "„Ich glaube, ich bekomme Fieber.“"],
       ["Lurch 1", "„Du hast kein Fieber. Du hast Stress. Ich mache Tee.“"],
-      ["Der Halbe", "„Vom hot tee zum dark tee“"],
+      ["Der Halbe", "„Vom Hot Tea zum Dark Tea!“"],
       "Lurch 1 tastet sich in die Küche und stößt gegen die Tür. Sie klemmt.",
-      ["Der Halbe", "„Mangel Nummer zehn!“"],
+      ["Der Halbe", "„Mangel Nummer zehn: Die Tür klemmt immer noch!“"],
     ],
     fact: "Der Feuersalamander verdankt seinen Namen einem alten Mythos. Früher legte man Holz in den Kamin, in dem Salamander überwinterten. Sie flüchteten vor den Flammen, und so glaubten die Menschen, sie überlebten im Feuer. Das stimmt nicht. Seine gelb-schwarze Zeichnung warnt Feinde: Bei Gefahr sondert er ein giftiges Sekret aus seiner Haut ab.",
     factAfter: true,
@@ -727,7 +732,7 @@ const DOORS = [
   },
 
   /* ---------- 8 ---------- */
-  { emoji: "🌾", title: "Der Tannenwedel", act: ACT2, focus: "Lurch 1 und der Halbe",
+  { emoji: "🌲", title: "Die Tannen", act: ACT2, focus: "Lurch 1 und der Halbe",
     story: [
   "In Raum 464 fehlt noch ein Weihnachtsbaum.",
   "Lurch 1 hat ihn beim Lieferdienst Biber & Söhne bestellt. Es klopft einmal. Der Wasserläufer ist schon wieder weg, bevor jemand öffnet.",
@@ -741,7 +746,7 @@ const DOORS = [
   ["Herr Biber", "„Ein innovatives Schilf.“"],
   "Er legt auf.",
   "Lurch 1 schaut direkt im Internet nach, in der Hoffnung, früh genug noch einen Weihnachtsbaum zu bekommen. Ausverkauft! Er sagt eine Weile nichts. Dann sagt er:",
-  ["Lurch 1", "„Ein Einschreiben, das auf der Fußmatte landet. Statt einer Tanne haben wir jetzt Schilf. Das ist jetzt das zweite Mal.“"],
+  ["Lurch 1", "„Ein Einschreiben, das auf der Fußmatte landet. Statt einer Tanne haben wir jetzt Schilf. Das ist schon das zweite Mal.“"],
   "Der Halbe hat in der Zwischenzeit das Schilf zu einem Gebilde zusammengebunden. Es sieht aus wie ein sehr müder Besen, aber mit Würde.",
   ["Lurch 2", "„Rein hypothetisch haben wir jetzt einen Weihnachtsbaum.“"],
   ["Lurch 1", "„Es sieht aus wie ein Besen!“"],
@@ -755,9 +760,26 @@ const DOORS = [
   ["Der Halbe", "„Er braucht vier Sekunden für ein Paket, und wir brauchen drei Tage für eine Beschwerde. Das ist ein Wettlauf, den wir nicht gewinnen werden!“"],
 ],
 
-    interaction: { kind: "reveal", title: "Anagramm-Rätsel mit Wasserpflanzen",
-      prompt: ["Löse die drei Buchstabensalate. Es sind Pflanzen, die am oder im Teich wachsen.", ["1. HCILFS", "2. SOSEERE", "3. BORKNELHOR"]],
-      solution: ["Lösung: 1 Schilf, 2 Seerose, 3 Rohrkolben."],
+    interaction: { kind: "quiz", title: "Dreimal höflich", upper: true,
+      prompt: ["Lurch 1 schreibt die Beschwerde an Herrn Biber. Sie soll „dreimal höflich“ sein. Welcher Anfang passt?"],
+      questions: [
+        { options: [
+            "„Lieber Herr Biber, dein Schilf ist ein Besen.“",
+            "„Lieber Herr Biber, vielen Dank für die schnelle Lieferung. Leider war im Paket Schilf statt einer Tanne. Wir würden uns sehr freuen, wenn du uns noch eine Tanne schicken könntest.“",
+            "„Hallo. Wir wollten eine Tanne. Danke.“",
+            "„Lieber Herr Biber, dein Wasserläufer ist zu schnell, dein Schilf ist zu dünn und deine Stimme ist zu tief.“",
+          ], correct: 1,
+          feedback: [
+            "Der Halbe: „Ehrlich, aber nur einmal höflich.“",
+            null,
+            "Lurch 2: „Rein hypothetisch ist das höflich. Es fehlen nur zwei Höflichkeiten.“",
+            "Lurch 1: „Das ist eine Mängelliste, keine Beschwerde.“",
+          ] },
+      ],
+      solution: [
+        "Lösung: B. Ein Dank, eine freundliche Erklärung und eine höfliche Bitte. Das ist dreimal höflich.",
+        "Lurch 1 schreibt die Beschwerde ordentlich ab und schickt sie los. Ob Herr Biber antwortet, erfährst du an Türchen 24.",
+      ],
     },
   },
 
@@ -767,9 +789,9 @@ const DOORS = [
   "Lurch 2 geht in den Keller. Er möchte Werkzeug holen und die Bedienungsanleitung für die Lichterkette suchen. Irgendwo zwischen alten Farbeimern, ausrangierten Blumentöpfen und verstaubten Kartons muss das Zeug liegen.",
   "Im Keller lebt Herr Olm. Er wohnt dort seit Jahrzehnten. Er kennt jeden Mieter, jede Hausregel und angeblich auch jede noch so kleine Besonderheit des Hauses. Außerdem besitzt er eine ganze Wand voller alter Fachbücher.",
   "Lurch 2 trifft ihn zufällig vor seiner Höhle.",
-  ["Lurch 2", "„Guten Tag, Herr Olm. Sie kennen sich doch hier im Haus aus, oder?“"],
-  ["Herr Olm", "„Was meinen Sie mit ‚auskennen‘?“"],
-  ["Lurch 2", "„Na ja, Sie wissen doch, wie hier alles geregelt ist.“"],
+  ["Lurch 2", "„Guten Tag, Herr Olm. Du kennst dich doch hier im Haus aus, oder?“"],
+  ["Herr Olm", "„Was meinst du mit ‚auskennen‘?“"],
+  ["Lurch 2", "„Na ja, du weißt doch, wie hier alles geregelt ist.“"],
   ["Herr Olm", "„Alles? Das ist eine gewagte Behauptung. Was ist überhaupt alles?“"],
   ["Lurch 2", "„Ich habe eine Frage zu einer Nachricht von Frau Kröte. Sie schreibt etwas über die Gemeinschaftsbereiche. Ich würde gerne wissen, welche Flächen sie damit meint.“"],
   ["Herr Olm", "„Gemeinschaft? Was soll das sein? Eine Gemeinschaft ist auch nur eine Ansammlung von Einzelwesen.“"],
@@ -777,7 +799,7 @@ const DOORS = [
   ["Herr Olm", "„Genutzt? Wer nutzt hier wen? Und wem gehört eigentlich der Keller?“"],
   ["Lurch 2", "„Ich meine zum Beispiel den Flur, den Hof oder den Garten. Welche Flächen gehören dazu?“"],
   ["Herr Olm", "„Flächen. Interessant. Früher hat man noch von Ordnung gesprochen. Heute wird alles in Flächen eingeteilt.“"],
-  ["Lurch 2", "„Können Sie mir sagen, was Frau Kröte damit meint?“"],
+  ["Lurch 2", "„Kannst du mir sagen, was Frau Kröte damit meint?“"],
   ["Herr Olm", "„Frau Kröte? Was hat die denn mit Ordnung zu tun?“"],
   "Lurch 2 versucht es noch einmal, aber Herr Olm geht auf nichts ein, was er sagt. Er antwortet nur auf Wörter, die er selbst gefunden hat. Es ist, als würde Lurch 2 gegen eine Wand sprechen, die zurückfragt.",
   ["Lurch 2", "„Vielleicht kannst du mir wenigstens bei einer anderen Sache helfen. Es geht um Herrn Reiher. Wie schreibt ein Reiher eigentlich? Woran erkennt man, ob er etwas Gutes oder etwas Schlechtes meint?“"],
@@ -797,30 +819,32 @@ const DOORS = [
   ["Herr Olm", "„Verändert? Warum sollte sich etwas verändern, das schon immer so war?“"],
   "Lurch 2 schaut auf das dicke Buch. Er hat den Eindruck, dass Herr Olm zwar auf jede Frage eine Antwort hat, aber keine davon unbedingt etwas mit der Frage zu tun hat.",
   ["Lurch 2", "„Vielen Dank, Herr Olm. Ich werde dann mal weitersuchen.“"],
-  ["Herr Olm", "„Suchen? Was suchen Sie denn?“"],
+  ["Herr Olm", "„Suchen? Was suchst du denn?“"],
   ["Lurch 2", "„Das Werkzeug und die Bedienungsanleitung für die Lichterkette.“"],
   ["Herr Olm", "„Lichterketten. Auch so eine moderne Erfindung.“"],
   "Er klappt sein Buch zu und verkriecht sich langsam wieder in seiner Höhle.",
   "Lurch 2 nimmt das Werkzeug und die Bedienungsanleitung, die er inzwischen neben einem alten Regal gefunden hat, und geht zurück durch den Kellergang.",
-  "Draußen vor dem Eingang sind Abdrücke im Schlamm: tief, mit vier Zehen. Lurch 2 bleibt stehen und betrachtet sie. Er fragt sich, von wem sie stammen."
+  "Draußen vor dem Kellereingang sind Abdrücke im Schlamm: tief, mit vier Zehen. Lurch 2 bleibt stehen und betrachtet sie. Er fragt sich, von wem sie stammen."
 ],
 
     fact: "Der Grottenolm lebt in unterirdischen Gewässern der Karsthöhlen Südosteuropas. Seine Augen sind zurückgebildet. Er spart Energie, wo er kann, und soll mehrere Jahre ohne Nahrung überleben können. Man vermutet, dass er sehr alt werden kann, möglicherweise rund 100 Jahre.",
     factAfter: true,
     interaction: { kind: "quiz", title: "Quiz und eine Vermutung",
+      prompt: ["Zwei Fragen zum Grottenolm und zum Schluss eine Vermutung zu den Abdrücken im Schlamm."],
+      hint: "Die Vermutung wird erst an Türchen 22 aufgelöst. Merk dir deine Antwort bis dahin!",
       questions: [
         { q: "Frage 1: Wo lebt der Grottenolm?", options: ["In Höhlengewässern Südosteuropas", "In Teichen in Mitteleuropa", "In Flüssen Nordamerikas"], correct: 0 },
         { q: "Frage 2: Wie lange kann ein Olm ohne Nahrung auskommen?", options: ["Etwa einen Tag", "Etwa einen Monat", "Bis zu etwa zehn Jahre"], correct: 2 },
-        { q: "Vermutung: Welches Tier hat die Abdrücke im Schlamm hinterlassen? Merk dir deine Antwort. Die Auflösung kommt an Türchen 22.", options: ["Ein Lurch", "Frau Kröte", "Herr Reiher", "Herr Olm"], guess: true },
+        { q: "Vermutung: Von wem stammen die tiefen Abdrücke mit vier Zehen?", options: ["Herr Olm", "Frau Kröte", "Herr Reiher", "Der Wasserläufer"], guess: true },
       ],
-      solution: ["Lösung Quiz: 1 a, 2 c.", "Deine Vermutung zu den Abdrücken wird an Türchen 22 aufgelöst."],
+      solution: ["Lösung Quiz: 1 a, 2 c.", "Deine Vermutung ist notiert. Ob sie stimmt, erfährst du an Türchen 22."],
     },
   },
 
   /* ---------- 10 ---------- */
   { emoji: "🎁", title: "Wichteln zu dritt", act: ACT2, focus: "alle drei",
     story: [
-      "Lurch 1 hat eine Idee um die Stimmung etwas aufzulockern. Er stellt sie beim Frühstück vor.",
+      "Lurch 1 hat eine Idee, um die Stimmung etwas aufzulockern. Er stellt sie beim Frühstück vor.",
       ["Lurch 1", "„Wir sollten wichteln.“"],
       ["Lurch 2", "„Wir sind drei.“"],
       ["Lurch 1", "„Das ist kein Argument.“"],
@@ -828,7 +852,7 @@ const DOORS = [
       ["Lurch 1", "„Es geht um die Überraschung.“"],
       "Lurch 1 holt drei zusammengefaltete Zettel aus einer Dose. Er hat sie schon vorbereitet. Jeder zieht einen. Niemand sagt, wen er gezogen hat.",
       ["Lurch 2", "„Muss ich jetzt ein halbes Geschenk machen?“"],
-      ["Lurch 1", "„Das darf du nicht sagen!“"],
+      ["Lurch 1", "„Das darfst du nicht sagen!“"],
       ["Lurch 2", "„Es ist mir herausgerutscht.“"],
       ["Der Halbe", "„Dann sag nichts mehr! Sonst erfahre ich noch, was ich bekomme, und muss so tun, als wüsste ich es nicht!“"],
     ],
@@ -856,16 +880,16 @@ const DOORS = [
       ["Der Halbe", "„Worauf?“"],
       ["Lurch 1", "„Auf alles.“"],
       "Der Halbe setzt sich an den Tisch und isst, während Lurch 1 knetet, etwa ein Drittel des Teigs. Lurch 1 merkt es nicht.",
-      "Da kommt Lurch 2 vom Flur herein, im Schlafanzug und mit Schal. Er will sich etwas zu trinken holen, bleibt aber stehen und sieht zur Wand. Dort in der Ecke neben dem Herd wächst ein kleiner, runder Fleck.",
-      ["Lurch 2", "„Was ist das?“"],
-      ["Lurch 1", "„Ein Schimmel. Ein Befall. Ich kümmere mich darum.“"],
-      ["Lurch 2", "„Ein Befall in der Küche. Und ich habe einen im Bad. Rein hypothetisch haben wir ein Hygieneproblem.“"],
-      ["Lurch 1", "„Wir haben kein Hygieneproblem nur lediglich zwei Stellen, um die wir uns kümmern müssten.“"],
+      "Da kommt Lurch 2 vom Flur herein, im Schlafanzug und mit Schal. Er will sich etwas zu trinken holen, bleibt aber stehen und sieht zur Wand. Neben dem Herd ist der Fleck, der wie ein Smiley aussieht. Er ist seit der Bestandsaufnahme ein ganzes Stück gewachsen.",
+      ["Lurch 2", "„Der ist größer geworden.“"],
+      ["Lurch 1", "„Ich gieße ihn regelmäßig. Er ist Vorsorge.“"],
+      ["Lurch 2", "„Ein Fleck in der Küche, einer im Bad. Rein hypothetisch haben wir ein Hygieneproblem.“"],
+      ["Lurch 1", "„Wir haben kein Hygieneproblem, nur zwei Stellen, um die wir uns kümmern müssen.“"],
       "Sie sehen sich an. Beide lachen. Der Halbe sieht dem Gespräch zu wie einem Tennisspiel und hört mit dem Essen nicht auf.",
     ],
     interaction: { kind: "quiz", title: "Rechenrätsel",
       prompt: [
-        "Das Rezept ergibt 12 Plätzchen und braucht 200 g Mehl, 100 g Butter, 80 g Zucker und 1 Ei. Lurch 1 will 18 Plätzchen backen. ",
+        "Das Rezept ergibt 12 Plätzchen und braucht 200 g Mehl, 100 g Butter, 80 g Zucker und 1 Ei. Lurch 1 will 18 Plätzchen backen.",
       ],
       questions: [
         { q: "Frage 1: Wie viel Mehl braucht er?", options: ["250 g", "300 g", "360 g", "400 g"], correct: 1 },
@@ -880,16 +904,16 @@ const DOORS = [
     story: [
       "Am 12. Dezember läuft die Vorbereitung. Lurch 1 hängt einen Plan an die Wand. Lurch 2 liest die Anleitung der Lichterkette zum dritten Mal. Der Halbe hat sich aus Schilf eine Krone gebaut und trägt sie. Dann klingelt es.",
       "Vor der Tür steht Herr Reiher, auf einem Bein. In der einen Hand hält er ein kleines Notizbuch.",
-      ["Herr Reiher", "„Guten Tag. Ich wollte nur kurz nachsehen, wie weit Sie sind.“"],
+      ["Herr Reiher", "„Guten Tag. Ich wollte nur kurz nachsehen, wie weit ihr seid.“"],
       ["Lurch 1", "„Wir liegen im Plan.“ Sein Bommel zittert."],
       "Herr Reiher geht durch das Wohnzimmer. Er sieht die Lichterkette in ihren Einzelteilen und den Besenbaum in der Ecke.",
       ["Herr Reiher", "„Die Lichterkette ist … ein Anfang. Und das ist euer Baum?“"],
       ["Der Halbe", "„Er ist aus Schilf! Der Wasserläufer nennt ihn innovativ!“"],
       ["Herr Reiher", "„Der Wasserläufer nennt vieles.“"],
       "Er sieht die drei lange an, etwas zu lange. Lurch 1 verstummt.",
-      ["Herr Reiher", "„Wie nennt man noch diese Dinger, die man oben auf dem Weihnachtsbaum setzt …? Nein. Egal.“"],
+      ["Herr Reiher", "„Wie nennt man noch diese Dinger, die man oben auf den Weihnachtsbaum setzt …? Nein. Egal.“"],
       ["Der Halbe", "„Stern?“"],
-      ["Herr Reiher", "„Dort wo ich herkomme sagen wir Puntale.“"],
+      ["Herr Reiher", "„Dort, wo ich herkomme, sagen wir Puntale.“"],
       "An der Tür dreht er sich noch einmal um.",
       ["Herr Reiher", "„Es riecht nach Plätzchen. Da bekommt man Hunger.“"],
       "Dann ist er weg.",
@@ -915,16 +939,16 @@ const DOORS = [
       "Lurch 2 sucht in einer Schublade der Kommode nach einer Ersatzsicherung für die Lichterkette. Stattdessen findet er einen Aktenordner mit der Aufschrift „Raum 464: Vormieter“. Das erste Blatt zeigt ein Foto einer Froschfamilie mit drei Kindern. Alle lächeln.",
       ["Lurch 2", "„Familie Frosch. Vor uns haben hier Herr und Frau Frosch mit drei Kindern gewohnt. Sie sind im Frühjahr ausgezogen. Es gibt keinen Vermerk dazu. Nirgends.“"],
       ["Lurch 1", "„Ohne Vermerk? Das gibt es nicht.“"],
-      ["Lurch 2", "„Rein hypothetisch gibt es dafür nur drei Erklärungen …“"],
+      ["Lurch 2", "„Rein hypothetisch gibt es dafür nur vier Erklärungen …“"],
       "Lurch 2 wird unterbrochen.",
       ["Lurch 1", "„Herr Reiher hat sie gefressen!“"],
-      ["Lurch 2", "„Das ist Theorie 1. Aber es gibt noch zwei weitere.“"],
+      ["Lurch 2", "„Das ist Theorie 1. Aber es gibt noch drei weitere.“"],
       "Lurch 2 räuspert sich und spricht weiter.",
       ["Theorie 1", "Herr Reiher hat die Familie Frosch gefressen. Dafür spricht, dass sie spurlos verschwunden sind."],
       ["Theorie 2", "Die Familie Frosch ist heimlich ausgezogen. Dafür spricht, dass sie im Frühjahr verschwunden sind und es keinen offiziellen Vermerk über ihren Auszug gibt."],
-      ["Theorie 3", "Jemand hat die Familie Frosch absichtlich aus den Unterlagen verschwinden lassen."],
-      ["Theorie 4", "Die Familie Frosch ist heimlich ausgezogen und es wurde vergessen dies zu vermerken."],
-      "Hinter dem Foto steckt ein kleiner Zettel. Er ist von Herr Reiher unterschrieben, und ein Satz ist daneben halb durchgestrichen. Lurch 2 will die Schrift mit dem Brief vergleichen. Er geht zum Tisch, wo der Brief seit dem 1. Dezember liegt, und hält ihn neben den Zettel.",
+      ["Theorie 3", "Jemand hat die Familie Frosch absichtlich aus den Unterlagen verschwinden lassen. Dafür spricht, dass die Akte so dünn ist."],
+      ["Theorie 4", "Die Familie Frosch ist ganz normal ausgezogen, und es wurde nur vergessen, das zu vermerken. Dafür spricht, dass Herr Reiher kein Bürokrat ist."],
+      "Hinter dem Foto steckt ein kleiner Zettel. Er ist von Herrn Reiher unterschrieben, und ein Wort darauf ist durchgestrichen. Lurch 2 will die Schrift mit dem Brief vergleichen. Er geht zum Tisch, wo der Brief seit dem 1. Dezember liegt, und hält ihn neben den Zettel.",
       "Er sieht abwechselnd auf den Brief und auf den Zettel. Dann murmelt er etwas in seinen Schal.",
       ["Lurch 2", "„Groß … groß … und nicht im normalen Muster. Rein hypothetisch …“"],
       ["Lurch 1", "„Was sagst du?“"],
@@ -933,24 +957,32 @@ const DOORS = [
       ["Lurch 2", "„Ich murmle nicht.“"],
       ["Der Halbe", "„Du murmelst gerade.“"],
     ],
-    interaction: { kind: "info", title: "Das Geheimnis", showLetter: true,
-      prompt: [
-        "Im Brief aus Türchen 1 steckt etwas, das man beim normalen Lesen nicht sieht. Lurch 2 hat es fast entdeckt. Schau dir die Zeilen noch einmal genau an.",
-        "Wenn du es siehst, behalte es für dich. Die Lurche brauchen noch bis Türchen 20, um darauf zu kommen.",
+    interaction: { kind: "choice", title: "Was ist mit Familie Frosch passiert?",
+      prompt: ["Lurch 2 hat vier Theorien aufgestellt. Welche hältst du für richtig?"],
+      options: [
+        { label: "Theorie 1: Herr Reiher hat sie gefressen",
+          response: "Lurch 1 nickt so heftig, dass sein Bommel wackelt." },
+        { label: "Theorie 2: Sie sind heimlich ausgezogen",
+          response: "Der Halbe: „Ohne Abschiedsfeier? Das ist das Schlimmste daran.“" },
+        { label: "Theorie 3: Jemand hat sie aus den Akten verschwinden lassen",
+          response: "Lurch 2 zieht den Schal etwas höher: „Rein hypothetisch eine sehr unheimliche Theorie.“" },
+        { label: "Theorie 4: Der Auszug wurde nur nicht vermerkt",
+          response: "Lurch 1: „Das wäre die langweiligste Erklärung.“ Lurch 2: „Langweilig heißt nicht falsch.“" },
       ],
+      after: "Und noch etwas: Beim Vergleichen der Schrift ist Lurch 2 etwas am Brief aus Türchen 1 aufgefallen. Schau ihn dir genau an. Wenn du das Geheimnis entdeckst, behalte es für dich. Die Lurche kommen erst an Türchen 20 darauf.",
+      resultLetter: true,
     },
-    
   },
 
   /* ---------- 14 ---------- */
   { emoji: "🏝️", title: "Die Vormieter", act: ACT3, focus: "alle drei",
     story: [
       "Sie gehen zu Raum 435 und klopfen. Diesmal öffnet Frau Kröte die Tür ganz.",
-      ["Frau Kröte", "„Habt Ihr die Gemeinschaftsbereiche geschmückt?“"],
+      ["Frau Kröte", "„Habt ihr die Gemeinschaftsbereiche geschmückt?“"],
       ["Lurch 1", "„Welche denn?“"],
-      ["Frau Kröte", "„Die unten am Eingang. Das steht im Zettel.“"],
-      ["Der Halbe", "„Da stand alles drin nur nicht das!“"],
-      ["Lurch 2", "„Wir haben eine andere Frage. Es geht um Familie Frosch. Weist du was mit ihnen passiert ist?“"],
+      ["Frau Kröte", "„Die unten am Eingang. Das steht in meiner Nachricht.“"],
+      ["Der Halbe", "„Da stand alles drin, nur nicht das!“"],
+      ["Lurch 2", "„Wir haben eine andere Frage. Es geht um Familie Frosch. Weißt du, was mit ihnen passiert ist?“"],
       ["Frau Kröte", "„Die waren immer zu laut. Und ihre Kinder haben den Flur verstopft.“"],
       "Sie verschwindet kurz in der Wohnung und kommt mit einer Postkarte zurück. Auf der Vorderseite ist eine Lagune zu sehen. Auf der Rückseite steht in kleiner Schrift:",
       { label: "Postkarte aus Italien", note: ["Liebe Frau Kröte, uns geht es gut. Das Wetter ist wunderbar, die Teiche sind warm. Herr Reiher und der Wasserläufer haben uns Italien empfohlen, und wir haben es nie bereut. Die Kinder sind erwachsen geworden und haben jetzt ihre eigenen Probleme. Eine Nebenkostenabrechnung zum Beispiel. Herzliche Grüße, Familie Frosch."] },
@@ -963,21 +995,25 @@ const DOORS = [
     ],
     fact: "Frösche entwickeln sich in einer Metamorphose. Aus dem Ei schlüpft eine Kaulquappe mit Kiemen und Ruderschwanz. Zuerst wachsen die Hinterbeine, dann die Vorderbeine. Die Lungen bilden sich, und der Schwanz wird zurückgebildet. Am Ende steht ein Frosch, der an Land gehen kann.",
     factAfter: true,
-    interaction: { kind: "reveal", title: "Quiz Kaulquappe zu Frosch",
-      prompt: [
-        "Bringe die Entwicklungsschritte in die richtige Reihenfolge:",
-        ["A: Die Vorderbeine wachsen.", "B: Die Kaulquappe schlüpft und atmet mit Kiemen.", "C: Der Schwanz wird zurückgebildet, der Frosch geht an Land.", "D: Die Hinterbeine wachsen."],
+    interaction: { kind: "order", title: "Von der Kaulquappe zum Frosch",
+      prompt: ["Tippe die Entwicklungsschritte in der richtigen Reihenfolge an. Wenn du dich vertippst, tippe den Schritt noch einmal an."],
+      steps: [
+        "Die Vorderbeine wachsen.",
+        "Die Kaulquappe schlüpft und atmet mit Kiemen.",
+        "Der Schwanz wird zurückgebildet, der Frosch geht an Land.",
+        "Die Hinterbeine wachsen.",
       ],
-      solution: ["Lösung: B, D, A, C."],
+      answer: [1, 3, 0, 2],
+      solution: ["Lösung: Schlüpfen, Hinterbeine, Vorderbeine, Schwanz weg und an Land."],
     },
   },
 
   /* ---------- 15 ---------- */
-  { emoji: "🔍", title: "Der Verdacht", act: ACT3, focus: "Lurch 2",
+  { emoji: "🤝", title: "Gemeinschaftsbereich", act: ACT3, focus: "alle drei",
     story: [
-      "Die drei stehen im Eingangsbereich mit einer Kiste aus dem Keller voller Weihnachtsschmuck. Darin liegen mehrere Girlanden, ein Kranz und eine Schachtel mit Kugeln.",
+      "Die drei stehen im Eingangsbereich mit einer Kiste aus dem Keller voller Weihnachtsschmuck. Darin liegen mehrere Girlanden, ein Kranz, eine Lichterkette und eine Schachtel mit Kugeln.",
       ["Lurch 1", "„Gut. Wir schmücken jetzt den Eingangsbereich.“"],
-      "Lurch 1 nimmt die Lichterkette und hält sie hoch. Das Kabel ist mehrfach verknotet. Er zieht an einem Ende. Der Knoten wird größer.",
+      "Lurch 1 nimmt die Lichterkette aus der Kiste und hält sie hoch. Das Kabel ist mehrfach verknotet. Er zieht an einem Ende. Der Knoten wird größer.",
       ["Lurch 2", "„Du machst es schlimmer.“"],
       ["Lurch 1", "„Ich entwirre.“"],
       ["Der Halbe", "„Du vermehrst die Knoten.“"],
@@ -998,32 +1034,17 @@ const DOORS = [
       ["Lurch 2", "„Immerhin ist niemand verletzt.“"],
       ["Lurch 1", "„Das ist die Hauptsache.“"],
       "Der Halbe betrachtet den Eingangsbereich noch einmal.",
-      ["Der Halbe", "„So, das Ganze dann noch einmal bei uns im Zimmer.“"],
+      ["Der Halbe", "„So, und jetzt das Ganze noch einmal bei uns in der Wohnung.“"],
       "Die Motivation von Lurch 1 und Lurch 2 hält sich in Grenzen.",
       ["Lurch 1", "„Du hast gut reden.“"]
     ],
-    interaction: { kind: "quiz", title: "Wer hat den Briefkasten geleert?",
-      prompt: [
-        "Es gibt drei Verdächtige: Frau Kröte, Herr Olm und der Wasserläufer. Das sind die Hinweise:",
-        [
-          "1. Die Spur aus Schlamm führt vom Briefkasten bis zur Kellertür.",
-          "2. Der Wasserläufer läuft nur über die Wasseroberfläche und berührt nie den Boden.",
-          "3. Frau Kröte hat den ganzen Tag in Raum 435 gesessen und durch den Türspion geschaut. Das steht auf ihrem eigenen Zettel.",
-          "4. Herr Olm wohnt im Keller.",
-        ],
-      ],
+    interaction: { kind: "quiz", title: "Was ist beim Schmücken passiert?",
       questions: [
-        { q: "Wer war es?", options: ["Frau Kröte", "Herr Olm", "Der Wasserläufer"], correct: 1 },
+        { q: "Frage 1: Worüber stolpert Lurch 1?", options: ["Über die Lichterkette", "Über eine Kugel", "Über den Halben"], correct: 1 },
+        { q: "Frage 2: Was fällt herunter, als Lurch 2 den Kranz gerade richtet?", options: ["Eine Girlande", "Die Schachtel mit den Kugeln", "Der Stecker"], correct: 0 },
+        { q: "Frage 3: Warum leuchtet die Lichterkette zuerst nicht?", options: ["Ein Kabel ist gequetscht", "Der Schalter ist ausgeschaltet", "Die Sicherung ist herausgesprungen"], correct: 1 },
       ],
-      solution: [
-        "Lösung: b.",
-        "Lurch 1 klopft an die Kellertür. Herr Olm öffnet und sieht ihn an.",
-        { speaker: "Lurch 1", text: "„Haben Sie unsere Weihnachtskarten aus dem Briefkasten genommen?“" },
-        { speaker: "Herr Olm", text: "„Wer sagt, dass das Post war?“" },
-        { speaker: "Lurch 1", text: "„Es waren Weihnachtskarten.“" },
-        { speaker: "Herr Olm", text: "„Was ist eine Karte? Und was ist Weihnachten?“" },
-        "Er gibt sie schließlich zurück, nicht aus Einsicht, sondern weil er sie nicht lesen konnte. Die Schrift sei zu modern.",
-      ],
+      solution: ["Lösung: 1 b, 2 a, 3 b."],
     },
   },
 
@@ -1031,7 +1052,7 @@ const DOORS = [
   { emoji: "🔍", title: "Der Verdacht", act: ACT3, focus: "Lurch 2",
     story: [
     
-      "Am Abend hängt Lurch 2 eine Pinnwand im Wohnzimmer auf. Darauf stehen drei Zettel, verbunden mit rotem Faden.",
+      "Am Abend hängt Lurch 2 eine Pinnwand im Wohnzimmer auf. Daran hängen drei Zettel, verbunden mit rotem Faden.",
       ["Beweis 1", "Der Brief mit den Konsequenzen."],
       ["Beweis 2", "Herr Reiher stand unangekündigt vor der Tür."],
       ["Beweis 3", "Er hat uns zu lange angesehen."],
@@ -1042,15 +1063,15 @@ const DOORS = [
       ["Lurch 1", "„Einsam? Er besitzt ein ganzes Haus.“"],
       ["Der Halbe", "„Das ist ja das Problem. Ein ganzes Haus und keiner klopft.“"],
       ["Lurch 2", "„Das ist kein Beweis.“"],
-      ["Der Halbe", "„Das sind aber mögliche Gefühl. Gefühle sollten auch ernst genommen werden!“"],
-      "Lurch 2 überlegt kurz. Dann schreibt er einen fünften Zettel: „Beweis 5: Gefühl (Halber).“",
+      ["Der Halbe", "„Aber es ist ein Gefühl. Und Gefühle sollte man ernst nehmen!“"],
+      "Lurch 2 überlegt kurz. Dann schreibt er einen fünften Zettel: „Beweis 5: Gefühl (der Halbe).“",
       "Plötzlich klopft es an der Tür. Lurch 1 öffnet.",
       ["Frau Kröte", "„Wann wolltet ihr eigentlich eure Aufgaben erledigen?“"],
-      ["Lurch 1", "„Welche Aufgabe?“"],
+      ["Lurch 1", "„Welche Aufgaben?“"],
       ["Frau Kröte", "„Die Gemeinschaftsflächen unten am Eingang festlich dekorieren! Wie oft muss ich es eigentlich noch sagen?“"],
       ["Lurch 1", "„Das haben wir bereits getan!“"],
       ["Frau Kröte", "„Dann frage ich mich, was ihr geschmückt habt, aber nicht das, was ich meinte.“"],
-      "Die drei gehen mit Frau Kröte zum Eingangsbereich. Sie stehen genau in dem Raum, den sie geschmückt hatten. Doch der Raum sieht aus, als wäre er noch nie dekoriert worden.",
+      "Die drei gehen mit Frau Kröte zum Eingangsbereich. Sie stehen genau dort, wo sie am Vortag geschmückt hatten. Doch der Raum sieht aus, als wäre er noch nie dekoriert worden.",
       ["Lurch 1", "„Wie kann das sein? Wir hatten den doch geschmückt!“"],
       ["Der Halbe", "„Die Dekoration hat sich wohl aus dem Staub gemacht?“"],
       ["Lurch 2", "„Das hier ist ein einziges Irrenhaus. Wie kann denn jetzt einfach die Dekoration verschwinden?“"],
@@ -1072,9 +1093,9 @@ const DOORS = [
         "Lurch 2 klopft an die Kellertür. Herr Olm öffnet und sieht ihn misstrauisch an.",
         { speaker: "Lurch 2", text: "„Hast du unsere Dekoration aus dem Eingangsbereich gestohlen?“" },
         { speaker: "Herr Olm", text: "„Wer sagt denn, dass das eure Dekoration ist und dass sie euch gestohlen wurde?“" },
-        { speaker: "Lurch 2", text: "„Die Dekoration stand im Keller. Auf der Kiste stand ausdrücklich: Für die Gemeinschaft. Wir haben damit den Eingangsbereich geschmückt, um dort für etwas festlichere Stimmung zu sorgen.“" },
+        { speaker: "Lurch 2", text: "„Die Dekoration war im Keller. Auf der Kiste stand ausdrücklich: Für die Gemeinschaft. Wir haben damit den Eingangsbereich geschmückt, um dort für etwas festlichere Stimmung zu sorgen.“" },
         { speaker: "Herr Olm", text: "„Na bitte! Da habt ihr es doch. Ihr habt sie mir gestohlen. Wer braucht denn schon festliche Stimmung?“" },
-        { speaker: "Lurch 2", text: "„Sie stand im Gemeinschaftsraum. Sie ist für alle gedacht.“" },
+        { speaker: "Lurch 2", text: "„Die Kiste stand im Gemeinschaftskeller. Sie ist für alle gedacht.“" },
         "Lurch 2 versucht noch eine Weile, mit Herrn Olm zu diskutieren. Doch der lässt sich nicht überzeugen. Erst als er die Dekoration genauer betrachtet, verzieht er das Gesicht.",
         { speaker: "Herr Olm", text: "„Ihr könnt den Kram wieder haben. Der ist mir zu modern.“" },
         "Er drückt Lurch 2 die Dekoration in die Arme und schließt die Kellertür.",
@@ -1105,7 +1126,7 @@ const DOORS = [
       ["Lurch 1", "„Welchen Weihnachtsbaum?“"],
       ["Der Halbe", "„Den Besen im Wohnzimmer. Ich dachte, wir könnten ihn schmücken.“"],
       ["Lurch 1", "„Du willst nicht wirklich dieses Ding schmücken?“"],
-      "Lurch 2 holt eine Kiste mit Weihnachtsschmuck. Lurch 1 betrachtet den Besen noch einmal skeptisch.",
+      "Lurch 2 holt ihre eigene kleine Kiste mit Weihnachtsschmuck. Lurch 1 betrachtet den Besen noch einmal skeptisch.",
       ["Lurch 1", "„Ich möchte nur festhalten, dass wir hier einen Besen schmücken.“"],
       ["Lurch 2", "„Rein hypothetisch schmücken wir einen Besen.“"],
       ["Der Halbe", "„Vielleicht sollten wir ihm auch einen Namen geben.“"],
@@ -1113,13 +1134,19 @@ const DOORS = [
       ["Lurch 1", "„Das ist doch kein Name für einen Weihnachtsbaum.“"],
       ["Der Halbe", "„Für einen Besen schon.“"]
 ],
-    interaction: { kind: "choice", title: "Auf wessen Seite stehst du?",
+    interaction: { kind: "choice", title: "Was kommt auf die Spitze?",
+      prompt: ["Besenjamin braucht noch etwas für die Spitze. Herr Reiher würde „Puntale“ dazu sagen. Was soll oben drauf? Es gibt vier Möglichkeiten. Probiere sie aus."],
       options: [
-        { label: "Lurch 1", response: "Lurch 1: „Ich danke dir. Ich habe es nur gut gemeint.“" },
-        { label: "Lurch 2", response: "Lurch 2: „Endlich versteht es jemand. Rein hypothetisch bist du mein Lieblingsnutzer.“" },
-        { label: "Keine Seite", response: "Der Halbe wäre stolz auf dich. Er ist gerade nicht da." },
+        { label: "Ein Stern",
+          response: "Lurch 1: „Klassisch. Bewährt. Kein Risiko.“ Der Stern ist etwas schwer, und Besenjamin neigt sich leicht zur Seite." },
+        { label: "Die Schilfkrone des Halben",
+          response: "Der Halbe: „Endlich wird meine Krone gewürdigt!“ Besenjamin sieht jetzt aus wie ein sehr müder König." },
+        { label: "Der fremde Socken",
+          response: "Lurch 2: „Rein hypothetisch ist das ein Beweisstück.“ Der Socken hängt schlaff herunter und riecht nach Fischbrötchen." },
+        { label: "Eine Kugel",
+          response: "Der Halbe holt eine Kugel unter dem Sofa hervor. Wie sie dort hingekommen ist, weiß niemand. Diesmal bleibt sie oben." },
       ],
-      after: "Egal, wie du dich entscheidest: Es ändert nichts. Lurch 1 notiert sich die Entscheidung, aber seine Hand zittert dabei.",
+      after: "Besenjamin trägt seinen Schmuck mit Würde. Lurch 1 streicht einen Punkt auf der Mängelliste durch: „Festlich: fast erfüllt.“",
     },
   },
 
@@ -1131,13 +1158,13 @@ const DOORS = [
       ["Herr Reiher", "„Hier irgendwo. Er muss doch hier irgendwo sein.“"],
       "Er hält inne und blickt auf sein Spiegelbild. Dann richtet er sich auf und murmelt vor sich hin.",
       ["Herr Reiher", "„Hallo. Ich wollte fragen, ob … nein.“"],
-      "Dem Halben ist es drinnen zu warm geworden. Er geht nach draußen und entdeckt aus einiger Entfernung Herrn Reiher. Er bleibt hinter einem Schilfhalm stehen und beobachtet ihn. Dann tritt er einen Schritt vor und tritt auf einen Zweig.",
+      "Dem Halben ist es drinnen zu warm geworden. Er geht nach draußen und entdeckt aus einiger Entfernung Herrn Reiher. Er bleibt hinter einem Schilfhalm stehen und beobachtet ihn. Dann macht er einen Schritt nach vorn und tritt auf einen Zweig.",
       "Knack!",
       "Herr Reiher fährt herum. Er sieht den Halben und dann auf seinen Schnabel. Dort hängt ein kleines Päckchen in Geschenkpapier mit einer Schleife. Er versucht, es hinter seinem Rücken zu verstecken. Das gelingt ihm allerdings nicht.",
       ["Herr Reiher", "„Ah. Guten Abend. Ich war gerade … ich wollte … Welcher Tag ist heute?“"],
       ["Der Halbe", "„Der 18.“"],
       ["Herr Reiher", "„Ach so. Dann habe ich mich nicht geirrt.“ Er klingt erleichtert und enttäuscht zugleich."],
-      ["Der Halbe", "„Sie üben Smalltalk.“"],
+      ["Der Halbe", "„Du übst Smalltalk.“"],
       ["Herr Reiher", "„Das ist … nein. Ja. Es hilft, wenn man vorher … Es ist schon eine Weile her, dass ich …“"],
       "Er sieht wieder auf das Eis. Dann fällt ihm etwas aus dem Notizbuch, ein loses Blatt, das der Wind erfasst. Er greift danach, verliert kurz den Halt, und eine einzelne graue Feder bleibt im Schilf hängen.",
       ["Herr Reiher", "„Ich muss gehen. Es ist spät. Ich habe noch … einen Termin.“"],
@@ -1158,79 +1185,76 @@ const DOORS = [
   },
 
   /* ---------- 19 ---------- */
-  { emoji: "🤝", title: "Entschuldigungen", act: ACT4, focus: "Lurch 1 und Lurch 2",
+  { emoji: "🎊", title: "Die Bescherung", act: ACT4, focus: "Lurch 1 und Lurch 2",
     story: [
-      "Am nächsten Morgen sitzen alle drei Lurche am Küchentisch. Da Lurch 2 langsam anfängt, Hinweise darauf zu geben, was er für den Halben beim Wichteln besorgt hat, wird das Wichteln kurzerhand vorverlegt. Auf dem Tisch stehen drei Geschenke, jedes in Papier eingewickelt. Es ist Zeit für das Wichteln.",
+      "Am nächsten Morgen sitzen alle drei Lurche am Küchentisch. Lurch 2 hat in den letzten Tagen immer mehr Andeutungen gemacht, was er für den Halben besorgt hat. Deshalb wird das Wichteln kurzerhand vorverlegt. Auf dem Tisch liegen drei eingepackte Geschenke.",
       "Die Lose haben sie bereits am 10. Dezember gezogen. Lurch 2 hat den Halben, der Halbe hat Lurch 1 und Lurch 1 hat Lurch 2 gezogen.",
       "Der Halbe sitzt ungewöhnlich aufrecht. Er hat seine Mütze abgenommen und die Feder daneben auf den Tisch gelegt.",
-      ["Der Halbe", "Bevor wir anfangen, muss ich euch etwas erzählen. Es geht um eine Sache, die gestern passiert ist, und ich glaube, ihr solltet beide davon wissen."],
-      ["Lurch 1", "Nach dem Wichteln."],
-      ["Lurch 2", "Geschenke zuerst. Geschichten laufen nicht weg."],
-      "Lurch 2 überreicht ihm ein Paket, das ungefähr so groß wie eine Fingerspitze ist.",
-      ["Lurch 2", "Ich habe lange überlegt. Ich wollte dir etwas schenken, das wirklich zu dir passt."],
+      ["Der Halbe", "„Bevor wir anfangen, muss ich euch etwas erzählen. Es geht um eine Sache, die gestern passiert ist, und ich glaube, ihr solltet beide davon wissen.“"],
+      ["Lurch 1", "„Nach dem Wichteln.“"],
+      ["Lurch 2", "„Geschenke zuerst. Geschichten laufen nicht weg.“"],
+      "Lurch 2 überreicht dem Halben ein Päckchen, das ungefähr so groß wie eine Fingerspitze ist.",
+      ["Lurch 2", "„Ich habe lange überlegt. Ich wollte dir etwas schenken, das wirklich zu dir passt.“"],
       "Der Halbe packt aus. Darin liegt der kleinste Löffel der Welt. An ihm hängt ein winziger Zettel: „Für den Fall, dass du wieder Heißhunger hast. So kannst du es wenigstens genießen.“",
-       "Der Halbe betrachtet den Löffel.",
-      ["Der Halbe", "Der ist ja selbst mir zu klein!"],
-      ["Lurch 2", "Nein. Der passt zu dir. So wird dir wenigstens bewusst, was du gegessen hast."],
+      "Der Halbe betrachtet den Löffel.",
+      ["Der Halbe", "„Der ist ja selbst mir zu klein!“"],
+      ["Lurch 2", "„Nein. Der passt zu dir. So wird dir bewusst, was du gegessen hast.“"],
       "Der Halbe legt den Löffel neben seine Feder.",
-      ["Der Halbe", "Also, was ich euch eigentlich erzählen wollte …"],
-      ["Lurch 1", "Jetzt bin ich dran."],
+      ["Der Halbe", "„Also, was ich euch eigentlich erzählen wollte …“"],
+      ["Lurch 1", "„Jetzt bin ich dran.“"],
       "Lurch 1 schiebt Lurch 2 ein flaches, sorgfältig verpacktes Geschenk hinüber.",
-      ["Lurch 1", "Ich habe mir Gedanken gemacht und finde, ich habe das beste Geschenk für dich gefunden."],
+      ["Lurch 1", "„Ich habe mir Gedanken gemacht und finde, ich habe das beste Geschenk für dich gefunden.“"],
       "Lurch 2 öffnet das Paket. Darin befindet sich ein winziger Bilderrahmen. Im Rahmen steckt ein Bild von einer Wand.",
-      ["Lurch 2", "Was ist das?"],
-      ["Lurch 1", "Ein Bild von einer Wand ohne Schimmel."],
-      ["Lurch 2", "Das ist eine leere Wand."],
-      ["Lurch 1", "Eben. Ein Zustand, den man zu schätzen wissen sollte."],
+      ["Lurch 2", "„Was ist das?“"],
+      ["Lurch 1", "„Ein Bild von einer Wand ohne Schimmel.“"],
+      ["Lurch 2", "„Das ist eine leere Wand.“"],
+      ["Lurch 1", "„Eben. Ein Zustand, den man zu schätzen wissen sollte.“"],
       "Lurch 2 dreht den Rahmen um. Auf der Rückseite steht: „Manchmal ist weniger mehr.“",
-      ["Lurch 2", "Du hast mir also nichts geschenkt."],
-      ["Lurch 1", "Doch. Eine Perspektive."],
+      ["Lurch 2", "„Du hast mir also nichts geschenkt.“"],
+      ["Lurch 1", "„Doch. Eine Perspektive.“"],
       "Der Halbe hebt die Hand.",
-      ["Der Halbe", "Ich möchte wirklich nur ganz kurz …"],
-      ["Lurch 1", "Moment. Jetzt kommt noch deins."],
+      ["Der Halbe", "„Ich möchte wirklich nur ganz kurz …“"],
+      ["Lurch 1", "„Moment. Jetzt kommt noch deins.“"],
       "Lurch 1 nimmt sein eigenes Geschenk vom Tisch. Der Halbe hat es etwas chaotisch eingepackt.",
       "Lurch 1 öffnet es vorsichtig. Darin liegt eine angeknabberte Kartoffel mit einem Zettel.",
       "Er liest vor: „Für deine Vorsorge. Damit du deinen Schimmel in der Küche weiterzüchten kannst.“",
-      ["Lurch 1", "Was soll ich damit?"],
-      ["Der Halbe", "Eine Kartoffel. Für deinen Schimmel."],
-      ["Lurch 1", "Warum ist die schon angeknabbert?"],
-      ["Der Halbe", "Ich hatte Hunger."],
+      ["Lurch 1", "„Warum ist die schon angeknabbert?“"],
+      ["Der Halbe", "„Ich hatte Hunger.“"],
       "Lurch 1 betrachtet die angeknabberte Kartoffel noch einmal und sieht etwas frustriert aus.",
-      ["Der Halbe", "Also, ich hätte mich über das Geschenk gefreut."],
-      ["Lurch 2", "Du bist aber auch ein kleiner Vielfraß."],
+      ["Der Halbe", "„Also, ich hätte mich über das Geschenk gefreut.“"],
+      ["Lurch 2", "„Du bist aber auch ein kleiner Vielfraß.“"],
       "Es herrscht kurze Stille.",
-      ["Lurch 2", "Moment mal. Du darfst deinen Schimmel behalten und sogar weiterzüchten?"],
-      ["Lurch 1", "Ja."],
-      ["Lurch 2", "Und meinen im Badezimmer hast du einfach entfernt?"],
-      ["Lurch 1", "Fangen wir schon wieder damit an? Das ist etwas völlig anderes."],
-      ["Lurch 2", "Was genau ist daran anders?"],
-      ["Lurch 1", "Deiner war im Badezimmer. Meiner ist in der Küche."],
-      ["Lurch 2", "Das macht es nicht besser."],
-      ["Lurch 1", "Doch. In der Küche kann man ihn besser im Blick behalten."],
-      ["Lurch 2", "Schimmelbert war aber pflegeleicht."],
-      ["Lurch 1", "Deiner hat sich an der Wand ausgebreitet. Meiner ist nur klein und sieht aus wie ein Smiley. Das ist ein Unterschied."],
-      ["Der Halbe", "Wieso streitet ihr? Schaut doch mal an die Wand."],
+      ["Lurch 2", "„Moment mal. Du darfst deinen Schimmel behalten und sogar weiterzüchten?“"],
+      ["Lurch 1", "„Ja.“"],
+      ["Lurch 2", "„Und meinen im Badezimmer hast du einfach entfernt?“"],
+      ["Lurch 1", "„Fangen wir schon wieder damit an? Das ist etwas völlig anderes.“"],
+      ["Lurch 2", "„Was genau ist daran anders?“"],
+      ["Lurch 1", "„Deiner war im Badezimmer. Meiner ist in der Küche.“"],
+      ["Lurch 2", "„Das macht es nicht besser.“"],
+      ["Lurch 1", "„Doch. In der Küche kann man ihn besser im Blick behalten.“"],
+      ["Lurch 2", "„Schimmelbert war aber pflegeleicht.“"],
+      ["Lurch 1", "„Deiner hat sich an der Wand ausgebreitet. Meiner ist nur klein und sieht aus wie ein Smiley. Das ist ein Unterschied.“"],
+      ["Der Halbe", "„Wieso streitet ihr? Schaut doch mal an die Wand.“"],
       "Sie sehen sich an. Dann sehen sie beide zur Wand. Dort läuft ein feiner dunkler Streifen entlang, von der Küche bis zur Badezimmertür. Es ist der Schimmel. Der aus der Küche hat sich über Wochen auf den Weg gemacht, und der aus dem Bad ist ihm entgegengewachsen. Auf halber Strecke haben sie sich getroffen.",
-      ["Lurch 1", "Sie haben sich gefunden."],
-      ["Lurch 2", "Schimmelbert hat deine Putzattacke überlebt!"],
-      ["Lurch 1", "Seit wann wächst denn der Smiley Richtung Bad?"],
-      ["Lurch 2", "So viel zum Thema, dass man ihn in der Küche besser im Blick behalten kann."],
-      ["Lurch 1", "Ja, hab verstanden. Die beiden sind jetzt Freunde!"],
+      ["Lurch 1", "„Sie haben sich gefunden.“"],
+      ["Lurch 2", "„Schimmelbert hat deine Putzattacke überlebt!“"],
+      ["Lurch 1", "„Seit wann wächst denn der Smiley Richtung Bad?“"],
+      ["Lurch 2", "„So viel zum Thema, dass man ihn in der Küche besser im Blick behalten kann.“"],
+      ["Lurch 1", "„Ja, hab verstanden. Die beiden sind jetzt Freunde!“"],
       "Der Halbe rückt seine Feder zurecht. Er schaut erst Lurch 1 an, dann Lurch 2.",
-      ["Der Halbe", "Jetzt, wo ja wieder alles gut ist, muss ich euch aber wirklich etwas erzählen. Ich habe etwas herausgefunden."],
+      ["Der Halbe", "„Jetzt, wo ja wieder alles gut ist, muss ich euch aber wirklich etwas erzählen. Ich habe etwas herausgefunden.“"],
     ],
-    interaction: { kind: "match", title: "Quiz „Wer hat das gesagt?“", hidePlaces: true, placeholder: "– Person wählen –",
-      prompt: ["Ordne die Sätze den richtigen Personen zu."],
-      places: ["Frau Kröte", "Herr Reiher", "Lurch 1", "der Wasserläufer", "der Halbe", "Herr Olm"],
+    interaction: { kind: "match", title: "Wer hat was bekommen?", hidePlaces: true, placeholder: "– Lurch wählen –",
+      prompt: ["Ordne die Geschenke und Zettel dem Lurch zu, der sie bekommen hat."],
+      places: ["Lurch 1", "Lurch 2", "der Halbe"],
       items: [
-        { name: "1. „Ich zähle nur halb. Aber ich zahle auch nur halb.“", answer: 4 },
-        { name: "2. „Das steht in meinem Zettel.“", answer: 0 },
-        { name: "3. „FRÜHER WAR ALLES BESSER!“", answer: 5 },
-        { name: "4. „Innovative Lösung! Weihnachtsschilf!“", answer: 3 },
-        { name: "5. „Ach so. Dann komme ich wohl noch einmal wieder.“", answer: 1 },
-        { name: "6. „Nur zur Sicherheit: Setzt euch alle.“", answer: 2 },
+        { name: "1. Der kleinste Löffel der Welt", answer: 2 },
+        { name: "2. Ein Bild von einer Wand ohne Schimmel", answer: 1 },
+        { name: "3. Eine angeknabberte Kartoffel", answer: 0 },
+        { name: "4. „Für den Fall, dass du wieder Heißhunger hast.“", answer: 2 },
+        { name: "5. „Für deine Vorsorge.“", answer: 0 },
       ],
-      solution: ["Lösung: 1 der Halbe, 2 Frau Kröte, 3 Herr Olm, 4 der Wasserläufer, 5 Herr Reiher, 6 Lurch 1."],
+      solution: ["Lösung: 1 der Halbe, 2 Lurch 2, 3 Lurch 1, 4 der Halbe, 5 Lurch 1.", "Der Halbe hat seine Geschichte immer noch nicht erzählt. Morgen ist es so weit."],
     },
   },
 
@@ -1239,16 +1263,16 @@ const DOORS = [
     story: [
       "Der Halbe erzählt. Er berichtet von der Nacht am Teich, vom Smalltalk, vom Päckchen und dem zerrissenen Blatt.",
       "Als er fertig ist, herrscht lange Stille.",
-      "Lurch 2 greift in seinen Schal und holt den Brief heraus. Er faltet ihn auf und legt ihn auf den Tisch. Er sagt nichts.",
-      ["Lurch 1", "Er hat uns nicht gedroht."],
-      ["Der Halbe", "Nein."],
-      ["Lurch 1", "Du hattest es schon bemerkt."],
-      ["Lurch 2", "Seit Tag 13. Ich habe es nicht gesagt, weil ich nicht sicher war."],
+      "Lurch 2 greift in seinen Schal und holt den Brief heraus. Er faltet ihn auseinander und legt ihn auf den Tisch. Er sagt nichts.",
+      ["Lurch 1", "„Er hat uns nicht gedroht.“"],
+      ["Der Halbe", "„Nein.“"],
+      ["Lurch 1", "„Du hattest es schon bemerkt.“"],
+      ["Lurch 2", "„Seit dem 13. Ich habe es nicht gesagt, weil ich nicht sicher war.“"],
       "Lurch 1 liest den Brief noch einmal. Nicht den Inhalt, sondern nur die ersten Buchstaben der Zeilen. Er liest langsam, fast flüsternd. Dann liest er sie noch einmal.",
-      ["Lurch 1", "Das gibt es nicht."],
-      ["Der Halbe", "Doch, bei Roller."],
-      ["Lurch 1", "Das heißt, deine Theorie vier hat gestimmt!"],
-      ["Lurch 2", "Herr Reiher wollte uns etwas mitteilen, das er nicht direkt schreiben könnte. Das war die vierte Theorie."],
+      ["Lurch 1", "„Das gibt es nicht.“"],
+      ["Der Halbe", "„Doch, bei Roller.“"],
+      ["Lurch 1", "„Das heißt, deine Theorie vier hat gestimmt!“"],
+      ["Lurch 2", "„Herr Reiher wollte uns etwas mitteilen, das er nicht direkt schreiben konnte. Das war die vierte Theorie.“"],
     ],
     interaction: { kind: "reveal", title: "Den Brief entschlüsseln", showLetter: true,
       prompt: ["Schau dir den Brief aus Türchen 1 noch einmal an. Nimm von jeder Zeile den ersten Buchstaben. Welche Botschaft ergibt sich?"],
@@ -1272,7 +1296,7 @@ const DOORS = [
       ["Lurch 2", "„Rein hypothetisch darf es also nichts geben, was ihn an Beute erinnert.“"],
       ["Lurch 1", "„Und nichts, was uns an Verwandte erinnert.“"],
       ["Der Halbe", "„Und nichts mit Schnecken. Du verträgst keine Schnecken.“"],
-      ["Lurch 2", "„Danke. Aber was sollen wir dann Zubereiten?“"],
+      ["Lurch 2", "„Danke. Aber was sollen wir dann zubereiten?“"],
       "Lurch 1 notiert gewissenhaft jede einzelne Einschränkung. Er wirkt zufrieden. Als hätte er gerade bewiesen, dass sich selbst die kompliziertesten Probleme mit einem Klemmbrett lösen lassen."
     ],
     interaction: { kind: "quiz", title: "Logikrätsel „Welches Menü passt?“", upper: true,
@@ -1296,7 +1320,7 @@ const DOORS = [
   { emoji: "🧦", title: "Der Socken", act: ACT4, focus: "alle drei",
     story: [
       
-      "Am 22. Dezember liegt der Socken wieder auf dem Tisch. Seit dem 2. Dezember hatte jeder der drei ihn mehrfach in der Hand gehabt. Doch niemand hatte sich bisher gefragt, was er eigentlich zu bedeuten hatte. Heute wagen sie es endlich.",
+      "Am 22. Dezember liegt der Socken wieder auf dem Tisch. Seit dem 2. Dezember hatte jeder der drei ihn mehrfach in der Hand gehabt. Doch niemand hatte sich bisher ernsthaft gefragt, was er eigentlich zu bedeuten hat. Heute wagen sie es endlich.",
       ["Lurch 2", "„Wir haben nur eine Spur und einen Fundort.“"],
       ["Lurch 1", "„Er riecht nach Fisch und lag im Flur, hinter der Garderobe.“"],
       ["Der Halbe", "„Wenn der nicht von uns ist, wie ist er dann überhaupt dort hingekommen?“"],
@@ -1311,7 +1335,7 @@ const DOORS = [
       ["Lurch 1", "„Wieso ist hinter der Garderobe überhaupt Asche?“"],
       "Lurch 2 sagt nichts. Er geht zurück zur Kommode und zieht die Schublade mit dem Aktenordner heraus, in dem das Bild der Familie Frosch aufbewahrt wird. Auf dem Familienfoto entdeckt er im Hintergrund etwas, das ihm bisher entgangen ist. Die Wohnung sah früher einmal ganz anders aus.",
       ["Lurch 2", "„Schaut mal! Dort, wo jetzt unsere Garderobe steht, war früher einmal ein Kamin!“"],
-      ["Lurch 1", "„Das heißt, das Loch führt zum Schornstein. Wie kommt den ein Socken in den Schornstein?“"],
+      ["Lurch 1", "„Das heißt, das Loch führt zum Schornstein. Wie kommt denn ein Socken in den Schornstein?“"],
       "Lurch 1 und Lurch 2 überlegen lange. Plötzlich ertönt eine Stimme aus der Lücke.",
       ["Der Halbe", "„HAAALLLOOO! Ich bin übrigens immer noch hier hinten und stecke fest. Könnte mir vielleicht jemand helfen?“"],
       "Lurch 1 und Lurch 2 eilen zur Hilfe. Mit vereinten Kräften und einem kräftigen Ruck ziehen sie den pechschwarzen kleinen Lurch wieder aus der Lücke.",
@@ -1324,9 +1348,9 @@ const DOORS = [
     ],
     interaction: { kind: "quiz", title: "Wem gehört der Socken?",
       prompt: [
-        "Das sind die 2 Spuren:",
+        "Das sind die beiden Spuren:",
         [
-          "Die Socke kommt aus dem Kamin.",
+          "Der Socken kam durch den alten Kamin.",
           "Er riecht nach Fisch.",
         ],
       ],
@@ -1335,10 +1359,10 @@ const DOORS = [
       ],
       solution: [
         "Lösung: Herr Reiher.",
-        { speaker: "Lurch 2", text: "„Ich tippe auf Herrn Reiher. Er ist der Einzige, der Fisch frisst. Deshalb könnte der Socken nach Fisch riechen. Außerdem kann er fliegen. Er muss also über das Gebäude geflogen sein und dabei den Socken verloren haben.“" },
+        { speaker: "Lurch 2", text: "„Ich tippe auf Herrn Reiher. Er frisst Fisch, deshalb könnte der Socken danach riechen. Außerdem kann er als Einziger fliegen. Er muss also über das Gebäude geflogen sein und dabei den Socken verloren haben.“" },
         { speaker: "Der Halbe", text: "„Das heißt, in der Nacht, in der ich ihm draußen begegnet bin, hat er nach dem Socken gesucht?“" },
         { speaker: "Lurch 2", text: "„Das würde vielleicht auch erklären, woher die Spuren vor Olms Eingang kamen. Die passten nämlich nicht zu ihm.“" },
-        { speaker: "Lurch 1", text: "„Dann sollten wir Herr Reiher fragen, ob er genau diesen Socken sucht.“" },
+        { speaker: "Lurch 1", text: "„Dann sollten wir Herrn Reiher fragen, ob er genau diesen Socken sucht.“" },
       ],
     },
   },
@@ -1350,7 +1374,7 @@ const DOORS = [
       ["Herr Reiher", "„Oh, hallo! K ... kann ich euch irgendwie helfen?“"],
       ["Lurch 1", "„Wir haben dir eine Einladung geschrieben!“"],
       "Lurch 2 überreicht Herrn Reiher den Brief. Dieser starrt ihn einen Moment lang an, als könne er kaum glauben, was er da in den Händen hält.",
-      ["Der Halbe", "„Und wir wollten fragen, ob dieser Socken vielleicht Ihnen gehört?“"],
+      ["Der Halbe", "„Und wir wollten fragen, ob dieser Socken vielleicht dir gehört?“"],
       "Herr Reiher wirkt für einen Augenblick etwas überfordert. Dann hellt sich sein Gesicht auf.",
       ["Herr Reiher", "„Oh ja! Den habe ich schon überall gesucht. Vielen D ... vielen Dank!“"],
       "Er nimmt den Socken entgegen, öffnet anschließend den Brief und beginnt zu lächeln.",
@@ -1359,19 +1383,19 @@ const DOORS = [
       "Die drei Lurche verabschieden sich und machen sich auf den Rückweg in ihre Wohnung.",
       ["Der Halbe", "„Da lagen wir ja goldrichtig!“"],
       ["Lurch 1", "„Wir haben jetzt keine Zeit zum Herumstehen. Es gibt noch einiges zu tun!“"],
-      "Zurück in der Wohnung geht jeder wieder an seine Aufgabe. Lurch 1 kümmert sich um das Essen und backt Plätzchen. Lurch 2 widmet sich seiner Lichterkette, während der Halbe inzwischen wieder sämtliche Weihnachtskugeln in der Wohnung verteilt hat.",
+      "Zurück in der Wohnung geht jeder wieder an seine Aufgabe. Lurch 1 kümmert sich um das Essen und backt noch einmal Plätzchen. Lurch 2 widmet sich seiner Lichterkette, während der Halbe inzwischen wieder sämtliche Weihnachtskugeln in der Wohnung verteilt hat.",
       ["Lurch 1", "„Wenn jetzt nichts mehr schiefgeht, haben wir morgen alles im Griff.“"],
       ["Lurch 2", "„Du hast gerade ‚wenn‘ gesagt.“"],
       "Es klopft. Der Wasserläufer steht im Flur.",
-      ["Der Wasserläufer", "„Hab gehört, bei euch gab es Stromprobleme. Ich hab's gelöst! Dauert nur kurz!“"],
-      ["Lurch 1", "„Welche Stromprobleme?“"],
+      ["Der Wasserläufer", "„Hab gehört, bei euch gab es Stromprobleme. Ich hab's gelöst!“"],
+      ["Lurch 1", "„Das ist doch schon über zwei Wochen …“"],
       "Doch bevor Lurch 1 den Satz zu Ende sprechen kann, ist der Wasserläufer schon wieder verschwunden. Repariert hat er allerdings nichts. Stattdessen hat er ein langes Verlängerungskabel von Frau Krötes Wohnung bis in die Küche verlegt und dort alles angeschlossen. Das Kabel hängt nun quer durch das gesamte Haus.",
       "Der Strom geht an. Er geht aus. Er geht wieder an. Der Herd springt an, der Ofen gleich mit. Die Plätzchen auf dem Backblech werden schwarz, bevor jemand reagieren kann. Im Wohnzimmer kippt der Besenbaum um, weil der Halbe das Kabel gestreift hat. Aus dem Treppenhaus ertönt Frau Krötes Stimme: „DAS STEHT IN DER HAUSORDNUNG!“",
-      ["Der Halbe", "„Warum kümmert sich eigentlich ein Postbote um den Strom?“"],
-      "Lurch 1 steht zwischen schwarzen Plätzchen und dem umgestürzten Baum in der Küche. Schließlich lässt er sich auf den Boden sinken. Sein Klemmbrett hält er noch immer in der Hand. Langsam legt er es neben sich ab.",
+      ["Der Halbe", "„Warum kümmert sich eigentlich ein Lieferant um den Strom?“"],
+      "Lurch 1 steht in der Küche zwischen schwarzen Plätzchen, im Wohnzimmer liegt der umgestürzte Baum. Schließlich lässt er sich auf den Boden sinken. Sein Klemmbrett hält er noch immer in der Hand. Langsam legt er es neben sich ab.",
       ["Lurch 1", "„Warum kann nicht einmal etwas nach Plan laufen?“"],
       "Der Halbe setzt sich neben ihn und lehnt sich an ihn.",
-      ["Der Halbe", "„Gemeinsam kriegen wir das schon hin?“"],
+      ["Der Halbe", "„Gemeinsam kriegen wir das schon hin.“"],
       "Lurch 1 sieht ihn an. Er öffnet den Mund, doch eine Antwort bleibt aus.",
       "Lurch 2 hält unterdessen noch immer die Lichterkette in den Händen und arbeitet sich durch die einzelnen Teile. Er sagt kein Wort, nickt aber zuversichtlich.",
       "Nach einer kurzen Verschnaufpause steht Lurch 1 wieder auf und macht sich daran, das Chaos in der Küche zu beseitigen. Der Halbe sammelt die verstreuten Weihnachtskugeln ein und stellt den Besenbaum wieder auf.",
@@ -1382,14 +1406,29 @@ const DOORS = [
       "Stolz hängt Lurch 2 die Lichterkette auf. Lurch 1 kommt aus der Küche dazu, und gemeinsam schmücken sie den Rest der Wohnung.",
       ["Der Halbe", "„So, jetzt kann Weihnachten kommen!“"]
 ],
-    interaction: { kind: "choice", title: "Die letzte Entscheidung",
-      prompt: ["Wie soll das Essen morgen beginnen?"],
-      options: [
-        { label: "Mit dem Essen", response: "Lurch 1: „Das ist effizient.“" },
-        { label: "Mit einem Gespräch", response: "Lurch 2: „Das ist riskant. Aber interessant.“" },
-        { label: "Mit einem Toast", response: "Der Halbe: „Ich habe schon etwas vorbereitet.“" },
+    interaction: { kind: "quiz", title: "Welches Teil war kaputt?", upper: true,
+      prompt: [
+        "Lurch 2 hat die Lichterkette in fünf Abschnitte zerlegt: Rot, Gelb, Grün, Blau und Weiß. Genau einer davon ist kaputt gewesen. Steckt man einen kaputten Abschnitt mit anderen zusammen ein, bleiben alle dunkel. Das hat er herausgefunden:",
+        [
+          "1. Rot und Gelb zusammen leuchten.",
+          "2. Grün allein leuchtet.",
+          "3. Blau und Weiß zusammen bleiben dunkel.",
+          "4. Blau und Rot zusammen leuchten.",
+        ],
       ],
-      after: "Egal, wie du dich entscheidest: Es hat keine Folgen. Lurch 1 notiert es ein letztes Mal. Diesmal lächelt er dabei mit dem ganzen Gesicht.",
+      questions: [
+        { q: "Welcher Abschnitt war kaputt?", options: ["Rot", "Gelb", "Grün", "Blau", "Weiß"], correct: 4,
+          feedback: [
+            "Lurch 2: „Rot hat mit Gelb und mit Blau geleuchtet. Rein hypothetisch ist Rot unschuldig.“",
+            "Lurch 2: „Gelb hat mit Rot geleuchtet. Gelb ist in Ordnung.“",
+            "Der Halbe: „Grün leuchtet sogar ganz allein. Grün ist der Beste!“",
+            "Lurch 2: „Blau hat mit Rot geleuchtet. Also kann es nicht Blau sein.“",
+            null,
+          ] },
+      ],
+      solution: [
+        "Lösung: E, Weiß. Blau und Weiß zusammen bleiben dunkel, also ist einer von beiden kaputt. Blau leuchtet aber mit Rot, also bleibt nur Weiß.",
+      ],
     },
   },
 
@@ -1405,12 +1444,13 @@ const DOORS = [
       "Er sieht die drei Lurche an. Alle lächeln gleichzeitig.",
       ["Herr Reiher", "„Das ... lasse ich gelten.“"],
       "Er schließt sein Notizbuch.",
-      ["Herr Reiher", "„Ich muss etwas gestehen. Ich wollte Ihnen keine Konsequenzen androhen. Ich hatte nur ... ich habe es einfach nicht über mich gebracht, das Wort ‚Einladung‘ zu schreiben.“"],
-      ["Lurch 2", "„Du hast wohl schon immer Schwierigkeiten damit. Du wollten ja auch die Familie Frosch einladen, haben es aber nie geschafft. Den Brief, den du damals geschrieben hattest, haben wir in unserer Kommode gefunden. Das Wort ‚Einladung‘ war dort durchgestrichen.“"],
-      ["Herr Reiher", "„Ich konnte es einfach nicht über mich bringen, das Wort ‚Einladung‘ ungestrichen stehen zu lassen. Mir fällt es schwer, Dinge zu zulassen, die nichts mit meiner Arbeit zu tun haben.“"],
-      "Es klopft an der Tür. Frau Kröte steht davor, eine Nachricht in der Hand. Sie ist genau eine Zeile lang: „Frohe Weihnachten.“ Dahinter steht kein weiterer Satz. Lurch 1 liest sie dreimal, um sicherzugehen.",
-      "Der Wasserläufer taucht kurz im Flur auf, wirft ein Paket auf den Boden und ist schon wieder verschwunden. Darin befindet sich ein Tannenwedel, genau der, den sie am 8. bestellt hatten. Natürlich zu spät und beschädigt. Daran hängt ein Brief: „Wir können Ihre Beschwerden zwar nicht nachvollziehen, haben aber alles in Kraft gesetzt, damit Sie Ihre gewünschte Bestellung erhalten.“",
-      "Aus dem Keller ertönt wie aus dem Nichts ein ferner Ruf: „FRÜHER WAR DAS ALLES BESSER!“ Niemand antwortet. Und niemand erwartet es.",
+      ["Herr Reiher", "„Ich muss etwas gestehen. Ich wollte euch keine Konsequenzen androhen. Ich hatte nur ... ich habe es einfach nicht über mich gebracht, das Wort ‚Einladung‘ zu schreiben.“"],
+      ["Lurch 2", "„Damit hattest du wohl schon immer Schwierigkeiten. Du wolltest ja auch Familie Frosch einladen, hast es aber nie geschafft. Deinen Zettel von damals haben wir in unserer Kommode gefunden. Das Wort ‚Einladung‘ war durchgestrichen.“"],
+      ["Herr Reiher", "„Ja. Dieses Wort will mir einfach nicht aus der Feder. Mir fällt es schwer, Dinge zuzulassen, die nichts mit meiner Arbeit zu tun haben.“"],
+      "Es klopft an der Tür. Frau Kröte steht davor, eine Nachricht in der Hand. Sie ist genau eine Zeile lang: „Frohe Weihnachten.“ Dahinter steht kein weiterer Satz. Lurch 1 liest sie dreimal, um sicherzugehen. Dann setzt sich Frau Kröte ungefragt dazu, und Lurch 1 holt schnell ein fünftes Gedeck.",
+      "Der Wasserläufer taucht kurz im Flur auf, wirft ein Paket auf den Boden und ist schon wieder verschwunden. Darin befindet sich eine kleine Tanne, genau die, die eigentlich schon am 8. Dezember hätte kommen sollen. Natürlich zu spät und mit abgeknickter Spitze. Daran hängt ein Brief:",
+      { label: "Brief von Biber & Söhne", note: ["Liebe Lurche,", "wir können eure Beschwerde zwar nicht nachvollziehen, haben aber alles in Bewegung gesetzt, damit ihr eure gewünschte Bestellung erhaltet.", "Herr Biber, Biber & Söhne"] },
+      "Aus dem Keller ertönt wie aus dem Nichts ein ferner Ruf: „FRÜHER WAR DAS ALLES BESSER!“ Niemand antwortet, und das erwartet auch niemand.",
       "Sie setzen sich an den Tisch. Das Essen ist gut, die Plätzchen sind teilweise verbrannt und die Lichterkette flackert nur ein einziges Mal. Frau Kröte nörgelt über die Sitzordnung.",
       ["Der Halbe", "„Was ist eigentlich in dem Päckchen drin?“"],
       ["Herr Reiher", "„Oh, das hätte ich fast vergessen. Das ist für euch.“"],
@@ -1425,34 +1465,22 @@ const DOORS = [
       ["Herr Reiher", "„Ich habe es mir notiert.“"],
       ["Der Halbe", "„Wo?“"],
       ["Herr Reiher", "„Das ... oh ... das weiß ich nicht mehr.“"],
-      "Alle lächeln.",
+      "Der Halbe flüstert den anderen zu:",
       ["Der Halbe", "„Solange er uns nicht vergisst und uns irgendwann plötzlich für Futter hält, ist es in Ordnung, wenn er etwas vergesslich ist.“"],
       "Und wenn sie nicht gefressen wurden, dann leben sie noch heute."
 
     ],
-    interaction: { kind: "reveal", title: "Das große Abschlussquiz", button: "Lösungen anzeigen",
-      prompt: [[
-        "1. Um wie viel Uhr sollte die Inspektion stattfinden?",
-        "2. Wie lang war der Socken?",
-        "3. Aus welchem Land kam die Postkarte der Familie Frosch?",
-        "4. Welcher Buchstabe stand für Lurch 1s letzten Notfallplan?",
-        "5. Welches Tier ist Herr Biber? Und für wen arbeitet er?",
-        "6. Welche Botschaft steckte im Brief?",
-        "7. Was waren am Ende die „Konsequenzen“?",
-      ]],
-      solution: [
-        "Lösungen:",
-        [
-          "1. 18 Uhr.",
-          "2. 40 Zentimeter.",
-          "3. Italien.",
-          "4. Plan Ä.",
-          "5. Ein Biber. Er ist der Chef des Wasserläufers.",
-          "6. „LADET MICH EIN“.",
-          "7. Ein gemeinsames Abendessen.",
-        ],
-        "Frohe Weihnachten aus Raum 464! 🐸🎄",
+    interaction: { kind: "quiz", title: "Das große Abschlussquiz",
+      questions: [
+        { q: "1. Um wie viel Uhr sollte die Inspektion stattfinden?", options: ["17 Uhr", "18 Uhr", "20 Uhr"], correct: 1 },
+        { q: "2. Aus welchem Land kam die Postkarte der Familie Frosch?", options: ["Italien", "Spanien", "Frankreich"], correct: 0 },
+        { q: "3. Wie heißt der geschmückte Besen?", options: ["Besenbert", "Besenjamin", "Schilfried"], correct: 1 },
+        { q: "4. Für wen arbeitet der Wasserläufer?", options: ["Für Herrn Reiher", "Für Herrn Biber", "Für Frau Kröte"], correct: 1 },
+        { q: "5. Welche Botschaft steckte im Brief?", options: ["FROHES FEST", "LADET MICH EIN", "ICH KOMME BALD"], correct: 1 },
+        { q: "6. Was war in Herrn Reihers Päckchen?", options: ["Drei Paar Socken", "Ein Tannenbaum", "Ein neues Notizbuch"], correct: 0 },
+        { q: "7. Was waren am Ende die „Konsequenzen“?", options: ["Ein gemeinsames Weihnachtsessen", "Eine Mieterhöhung", "Ein Auszug"], correct: 0 },
       ],
+      solution: ["Lösung: 1 b, 2 a, 3 b, 4 b, 5 b, 6 a, 7 a.", "Frohe Weihnachten 🦎🎄"],
     },
   },
 ];
@@ -1524,6 +1552,12 @@ ORDER.forEach((n, idx) => {
   cal.appendChild(slot);
 });
 
+/* Schwing-Animation auf das eigene Feld begrenzen */
+function swing(slot) {
+  slot.classList.add("swing");
+  clearTimeout(slot._swingT);
+  slot._swingT = setTimeout(() => slot.classList.remove("swing"), 1000);
+}
 function openDoor(n, slot) {
   if (n > maxDay) {
     const t = today();
@@ -1535,6 +1569,7 @@ function openDoor(n, slot) {
     return;
   }
   if (slot.classList.contains("open")) { showCard(n); return; }
+  swing(slot);
   slot.classList.add("open");
   slot.classList.remove("today");
   opened.add(n); saveOpened(opened);
@@ -1612,10 +1647,17 @@ function renderInteraction(box, ia, onDone) {
   const wrap = el("div", "interaction");
   wrap.appendChild(el("h3", null, "Interaktion: " + ia.title));
   (ia.prompt || []).forEach(line => wrap.appendChild(textBlock(line)));
+  if (ia.hint) {
+    const h = el("div", "note");
+    h.appendChild(el("span", "label", "🔎 Hinweis"));
+    h.appendChild(document.createTextNode(ia.hint));
+    wrap.appendChild(h);
+  }
   const result = el("div", "result");
   result.hidden = true;
   const showResult = lines => {
     result.replaceChildren(...lines.filter(Boolean).map(textBlock));
+    if (ia.resultLetter) result.appendChild(letterEl());
     result.hidden = false;
     onDone();
   };
@@ -1685,6 +1727,47 @@ function renderInteraction(box, ia, onDone) {
       showResult([`${right} von ${ia.items.length} richtig.`, ...ia.solution]);
     };
     wrap.appendChild(check);
+  }
+
+  else if (ia.kind === "order") {
+    const picked = [];
+    const btns = ia.steps.map((step, i) => {
+      const b = el("button", "opt", step);
+      b.onclick = () => {
+        const pos = picked.indexOf(i);
+        if (pos >= 0) picked.splice(pos);          // erneut antippen: ab hier zurücknehmen
+        else picked.push(i);
+        paint();
+        if (picked.length === ia.steps.length) {
+          let right = 0;
+          picked.forEach((idx, p) => {
+            const ok = ia.answer[p] === idx;
+            if (ok) right++;
+            btns[idx].classList.add(ok ? "correct" : "wrong");
+          });
+          btns.forEach(x => x.disabled = true);
+          retry.hidden = false;
+          showResult([`${right} von ${ia.steps.length} an der richtigen Stelle.`, ...ia.solution]);
+        }
+      };
+      wrap.appendChild(b);
+      return b;
+    });
+    const paint = () => btns.forEach((b, i) => {
+      const pos = picked.indexOf(i);
+      b.textContent = (pos >= 0 ? `${pos + 1}. ` : "") + ia.steps[i];
+      b.classList.toggle("chosen", pos >= 0);
+    });
+    const retry = el("button", "btn small", "Nochmal sortieren");
+    retry.hidden = true;
+    retry.onclick = () => {
+      picked.length = 0;
+      btns.forEach(b => { b.disabled = false; b.classList.remove("correct", "wrong"); });
+      paint();
+      retry.hidden = true;
+      result.hidden = true;
+    };
+    wrap.appendChild(retry);
   }
 
   else if (ia.kind === "reveal") {
@@ -1768,7 +1851,7 @@ if (preview) {
     ? `Testmodus: simuliert wird der ${maxDay}. Dezember.`
     : "Vorschau: Alle Türen sind offen (nichts wird gespeichert).";
   document.getElementById("resetbtn").onclick = () =>
-    document.querySelectorAll(".slot.open").forEach((s, i) => setTimeout(() => s.classList.remove("open"), i * 40));
+    document.querySelectorAll(".slot.open").forEach((s, i) => setTimeout(() => { swing(s); s.classList.remove("open"); }, i * 40));
 }
 
 /* ---------- Lichterkette ---------- */
@@ -1802,7 +1885,8 @@ function burst(slot) {
 /* ---------- Schneefall ---------- */
 (function snow() {
   const c = document.getElementById("snow"), ctx = c.getContext("2d");
-  let w, h, flakes;
+  const ov = document.getElementById("overlay");
+  let w, h, flakes, running = false, last = 0;
   function resize() {
     w = c.width = innerWidth; h = c.height = innerHeight;
     flakes = Array.from({ length: Math.min(90, Math.floor(w / 12)) }, (_, i) => ({
@@ -1813,25 +1897,43 @@ function burst(slot) {
   /* Pastell-Flocken: Mint, Rosé, Himmelblau */
   const FLAKE_COLORS = ["rgba(159,214,178,.55)", "rgba(240,167,164,.45)", "rgba(169,214,234,.55)"];
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  function draw() {
+  function paint(k) {
     ctx.clearRect(0, 0, w, h);
     FLAKE_COLORS.forEach((col, ci) => {
       ctx.fillStyle = col;
       ctx.beginPath();
       for (const f of flakes) {
         if (f.c !== ci) continue;
-        if (!still) {
-          f.y += f.s; f.d += .01; f.x += Math.sin(f.d) * .4;
+        if (k) {
+          f.y += f.s * k; f.d += .01 * k; f.x += Math.sin(f.d) * .4 * k;
           if (f.y > h) { f.y = -5; f.x = Math.random()*w; }
         }
         ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
       }
       ctx.fill();
     });
-    if (!still) requestAnimationFrame(draw);
   }
-  addEventListener("resize", resize);
-  resize(); draw();
+  /* Pause, solange ein Türchen offen ist (Schnee liegt dann unter dem Weichzeichner) oder der Tab im Hintergrund ist */
+  const paused = () => document.hidden || ov.classList.contains("show");
+  function frame(t) {
+    if (paused()) { running = false; return; }
+    const dt = t - last;
+    if (dt >= 15) {                        // höchstens ~60 Bilder pro Sekunde, auch auf 120-Hz-Displays
+      paint(Math.min(dt / 16.7, 3));       // gleiche Fallgeschwindigkeit bei jeder Bildrate
+      last = t;
+    }
+    requestAnimationFrame(frame);
+  }
+  function start() {
+    if (still || running || paused()) return;
+    running = true; last = performance.now();
+    requestAnimationFrame(frame);
+  }
+  let rt;
+  addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { resize(); paint(0); }, 150); });
+  document.addEventListener("visibilitychange", start);
+  new MutationObserver(start).observe(ov, { attributes: true, attributeFilter: ["class"] });
+  resize(); paint(0); start();
 })();
 </script>
 </body>
