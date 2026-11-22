@@ -275,7 +275,7 @@
   .chip.act { color: var(--red-ink); background: var(--blush); }
   .pic { margin: 4px 0 16px; }
   .pic img {
-    display: block; width: 100%; height: auto; max-height: 360px; object-fit: cover;
+    display: block; width: 100%; height: auto; max-height: 480px; object-fit: cover;
     border-radius: 16px; box-shadow: var(--shadow-soft);
   }
   .pic figcaption { font-size: .85rem; color: var(--muted); text-align: center; margin-top: 6px; font-style: italic; }
@@ -471,6 +471,7 @@ const FINALE = "Das Finale";
 const DOORS = [
   /* ---------- 1 ---------- */
   { emoji: "✉️", title: "Einschreiben", act: ACT1, focus: "alle drei",
+    image: "bilder/tuer-01.webp", imageAlt: "Die drei Lurche am Tisch, Lurch 1 liest den Brief vor",
     story: [
       "Der Seerosenhof ist ein Wohnhaus am Teich. Im vierten Stock, in Raum 464, wohnen drei Lurche. Es ist der 1. Dezember, früh am Morgen.",
       "Es klopft einmal. Als Lurch 1 die Tür öffnet, ist niemand mehr zu sehen. Auf der Fußmatte liegt ein Brief. Das war der Wasserläufer, der Lieferant des Hauses. Er ist der Schnellste im ganzen Teich. Zuverlässig ist er nicht. Der Brief wurde offenbar im Vorbeilaufen geworfen.",
@@ -507,6 +508,7 @@ const DOORS = [
 
   /* ---------- 2 ---------- */
   { emoji: "📋", title: "Bestandsaufnahme", act: ACT1, focus: "Lurch 1",
+    image: "bilder/tuer-02.webp", imageAlt: "Der Halbe findet den Socken hinter der Garderobe",
     story: [
       "Am nächsten Morgen geht Lurch 1 mit dem Klemmbrett durch die Wohnung. Er hat in der Nacht überlegt, was der Brief verlangt, und eine Mängelliste angelegt. Der Halbe läuft rückwärts vor ihm her und macht Geräusche wie ein Trommelwirbel.",
       ["Lurch 1", "„Festlich: nicht erfüllt. Wir haben weder Baum noch Lichter. Bewohnt: erfüllt. Konfliktfrei: offen.“"],
@@ -547,6 +549,7 @@ const DOORS = [
 
   /* ---------- 3 ---------- */
   { emoji: "💭", title: "Theorien", act: ACT1, focus: "Lurch 2",
+    image: "bilder/tuer-03.webp", imageAlt: "Lurch 2 erklärt seine fünf Theorien an der Wand, der Halbe isst Algenchips",
     story: [
       "Am Abend hat Lurch 2 die Wand neben dem Sofa mit Zetteln beklebt. Er trägt den Schal, obwohl es in der Wohnung warm ist.",
       ["Lurch 2", "„Ich habe fünf Theorien, warum Herr Reiher uns diesen Brief geschrieben hat.“"],
@@ -621,6 +624,7 @@ const DOORS = [
 
   /* ---------- 5 ---------- */
   { emoji: "📝", title: "Der Plan", act: ACT1, focus: "Lurch 1",
+    image: "bilder/tuer-05.webp", imageAlt: "Die drei kochen, putzen und dekorieren gleichzeitig",
     story: [
       "Lurch 1 hat die Wohnung über Nacht in ein Projekt verwandelt. Auf dem Tisch liegt ein Plakat mit dem Titel „Weihnachtsinspektion: Aufgabenverteilung“.",
       ["Lurch 1", "„Es gibt drei Aufgaben: Dekoration, Essen, Putzen. Jeder von uns übernimmt eine.“"],
@@ -664,6 +668,7 @@ const DOORS = [
 
   /* ---------- 6 ---------- */
   { emoji: "📜", title: "Frau Krötes Zettel", act: ACT1, focus: "alle drei",
+    image: "bilder/tuer-06.webp", imageAlt: "Frau Kröte späht aus Raum 435",
     story: [
       "An der Wohnungstür hängt eine Nachricht von Frau Kröte, der Nachbarin aus Raum 435. Sie ist drei Seiten lang.",
       "Der Anfang lautet:",
@@ -700,6 +705,7 @@ const DOORS = [
 
   /* ---------- 7 ---------- */
   { emoji: "💡", title: "Die Lichterkette", act: ACT2, focus: "Lurch 2",
+    image: "bilder/tuer-07.webp", imageAlt: "Stromausfall: die drei im Dunkeln mit der Lichterkette",
     story: [
       "Im Wohnzimmer liegt seit Wochen eine kaputte Lichterkette. Lurch 2 wollte sie „gleich“ reparieren. Heute ist der Tag des „gleich“.",
       ["Lurch 2", "„Ich habe sie gründlich untersucht. Zwei Kontakte sind oxidiert, ein Kabel ist gequetscht, und der Stecker steckte in der falschen Dose.“"],
@@ -733,6 +739,7 @@ const DOORS = [
 
   /* ---------- 8 ---------- */
   { emoji: "🌲", title: "Die Tannen", act: ACT2, focus: "Lurch 1 und der Halbe",
+    image: "bilder/tuer-08.webp", imageAlt: "Lurch 1 am Telefon, der Halbe bindet den Schilfbaum",
     story: [
   "In Raum 464 fehlt noch ein Weihnachtsbaum.",
   "Lurch 1 hat ihn beim Lieferdienst Biber & Söhne bestellt. Es klopft einmal. Der Wasserläufer ist schon wieder weg, bevor jemand öffnet.",
@@ -785,6 +792,7 @@ const DOORS = [
 
   /* ---------- 9 ---------- */
   { emoji: "🕳️", title: "Herr Olm", act: ACT2, focus: "Lurch 2",
+    image: "bilder/tuer-09.webp", imageAlt: "Lurch 2 bei Herrn Olm im Keller",
     story: [
   "Lurch 2 geht in den Keller. Er möchte Werkzeug holen und die Bedienungsanleitung für die Lichterkette suchen. Irgendwo zwischen alten Farbeimern, ausrangierten Blumentöpfen und verstaubten Kartons muss das Zeug liegen.",
   "Im Keller lebt Herr Olm. Er wohnt dort seit Jahrzehnten. Er kennt jeden Mieter, jede Hausregel und angeblich auch jede noch so kleine Besonderheit des Hauses. Außerdem besitzt er eine ganze Wand voller alter Fachbücher.",
@@ -843,6 +851,7 @@ const DOORS = [
 
   /* ---------- 10 ---------- */
   { emoji: "🎁", title: "Wichteln zu dritt", act: ACT2, focus: "alle drei",
+    image: "bilder/tuer-10.webp", imageAlt: "Die drei beim Wichteln am Tisch",
     story: [
       "Lurch 1 hat eine Idee, um die Stimmung etwas aufzulockern. Er stellt sie beim Frühstück vor.",
       ["Lurch 1", "„Wir sollten wichteln.“"],
@@ -872,6 +881,7 @@ const DOORS = [
 
   /* ---------- 11 ---------- */
   { emoji: "🍪", title: "Plätzchen", act: ACT2, focus: "Lurch 1",
+    image: "bilder/tuer-11.webp", imageAlt: "Lurch 1 backt nachts Plätzchen, der Halbe nascht Teig",
     story: [
       "Um 22 Uhr steht Lurch 1 in der Küche. Er hat Mehl in den Falten, Zucker auf der Mütze und eine Schürze, die er selbst genäht hat.",
       "Der Halbe kommt im Schlafanzug herein.",
@@ -901,6 +911,7 @@ const DOORS = [
 
   /* ---------- 12 ---------- */
   { emoji: "🪶", title: "Vorbesichtigung", act: ACT2, focus: "alle drei",
+    image: "bilder/tuer-12.webp", imageAlt: "Herr Reiher steht zur Vorbesichtigung in der Tür",
     story: [
       "Am 12. Dezember läuft die Vorbereitung. Lurch 1 hängt einen Plan an die Wand. Lurch 2 liest die Anleitung der Lichterkette zum dritten Mal. Der Halbe hat sich aus Schilf eine Krone gebaut und trägt sie. Dann klingelt es.",
       "Vor der Tür steht Herr Reiher, auf einem Bein. In der einen Hand hält er ein kleines Notizbuch.",
@@ -935,6 +946,7 @@ const DOORS = [
 
   /* ---------- 13 ---------- */
   { emoji: "📁", title: "Die Akte", act: ACT3, focus: "Lurch 2",
+    image: "bilder/tuer-13.webp", imageAlt: "Das Foto der Familie Frosch in der Akte",
     story: [
       "Lurch 2 sucht in einer Schublade der Kommode nach einer Ersatzsicherung für die Lichterkette. Stattdessen findet er einen Aktenordner mit der Aufschrift „Raum 464: Vormieter“. Das erste Blatt zeigt ein Foto einer Froschfamilie mit drei Kindern. Alle lächeln.",
       ["Lurch 2", "„Familie Frosch. Vor uns haben hier Herr und Frau Frosch mit drei Kindern gewohnt. Sie sind im Frühjahr ausgezogen. Es gibt keinen Vermerk dazu. Nirgends.“"],
@@ -976,6 +988,7 @@ const DOORS = [
 
   /* ---------- 14 ---------- */
   { emoji: "🏝️", title: "Die Vormieter", act: ACT3, focus: "alle drei",
+    image: "bilder/tuer-14.webp", imageAlt: "Frau Kröte öffnet die Tür von Raum 435",
     story: [
       "Sie gehen zu Raum 435 und klopfen. Diesmal öffnet Frau Kröte die Tür ganz.",
       ["Frau Kröte", "„Habt ihr die Gemeinschaftsbereiche geschmückt?“"],
@@ -1010,6 +1023,7 @@ const DOORS = [
 
   /* ---------- 15 ---------- */
   { emoji: "🤝", title: "Gemeinschaftsbereich", act: ACT3, focus: "alle drei",
+    image: "bilder/tuer-15.webp", imageAlt: "Die drei schmücken den Eingangsbereich",
     story: [
       "Die drei stehen im Eingangsbereich mit einer Kiste aus dem Keller voller Weihnachtsschmuck. Darin liegen mehrere Girlanden, ein Kranz, eine Lichterkette und eine Schachtel mit Kugeln.",
       ["Lurch 1", "„Gut. Wir schmücken jetzt den Eingangsbereich.“"],
@@ -1050,6 +1064,7 @@ const DOORS = [
 
   /* ---------- 16 ---------- */
   { emoji: "🔍", title: "Der Verdacht", act: ACT3, focus: "Lurch 2",
+    image: "bilder/tuer-16.webp", imageAlt: "Eine Schlammspur im Flur",
     story: [
     
       "Am Abend hängt Lurch 2 eine Pinnwand im Wohnzimmer auf. Daran hängen drei Zettel, verbunden mit rotem Faden.",
@@ -1106,6 +1121,7 @@ const DOORS = [
 
   /* ---------- 17 ---------- */
   { emoji: "🧽", title: "Der Streit", act: ACT3, focus: "alle drei",
+    image: "bilder/tuer-17.webp", imageAlt: "Streit im Bad: Lurch 1 putzt, Lurch 2 ist beleidigt",
     story: [
       "Es beginnt mit einem Geruch. Lurch 2 kommt aus dem Schlafzimmer und geht ins Bad. Er bleibt in der Tür stehen. Die Ecke neben der Dusche ist blitzblank. Es riecht nach Desinfektionsmittel.",
       ["Lurch 2", "„Wo ist er?“"],
@@ -1152,6 +1168,7 @@ const DOORS = [
 
   /* ---------- 18 ---------- */
   { emoji: "🌕", title: "Die Nacht am Teich", act: ACT3, focus: "der Halbe",
+    image: "bilder/tuer-18.webp", imageAlt: "Herr Reiher mit Päckchen am zugefrorenen Teich, daneben der Halbe",
     story: [
       "Draußen ist es kalt und still. Der Teich liegt unter einer dünnen Eisschicht, und die Sonne geht unter.",
       "Am Ufer steht eine Gestalt auf einem Bein. Es ist Herr Reiher. Er beugt sich immer wieder über das Wasser und späht zwischen den dunklen Stellen im Eis. Mit seinem Schnabel schiebt er vorsichtig ein paar Schilfhalme zur Seite.",
@@ -1186,6 +1203,7 @@ const DOORS = [
 
   /* ---------- 19 ---------- */
   { emoji: "🎊", title: "Die Bescherung", act: ACT4, focus: "Lurch 1 und Lurch 2",
+    image: "bilder/tuer-19.webp", imageAlt: "Die Bescherung am Küchentisch",
     story: [
       "Am nächsten Morgen sitzen alle drei Lurche am Küchentisch. Lurch 2 hat in den letzten Tagen immer mehr Andeutungen gemacht, was er für den Halben besorgt hat. Deshalb wird das Wichteln kurzerhand vorverlegt. Auf dem Tisch liegen drei eingepackte Geschenke.",
       "Die Lose haben sie bereits am 10. Dezember gezogen. Lurch 2 hat den Halben, der Halbe hat Lurch 1 und Lurch 1 hat Lurch 2 gezogen.",
@@ -1260,6 +1278,7 @@ const DOORS = [
 
   /* ---------- 20 ---------- */
   { emoji: "💌", title: "Die Wahrheit über den Brief", act: ACT4, focus: "alle drei",
+    image: "bilder/tuer-20.webp", imageAlt: "Die drei lesen den Brief noch einmal",
     story: [
       "Der Halbe erzählt. Er berichtet von der Nacht am Teich, vom Smalltalk, vom Päckchen und dem zerrissenen Blatt.",
       "Als er fertig ist, herrscht lange Stille.",
@@ -1285,6 +1304,7 @@ const DOORS = [
 
   /* ---------- 21 ---------- */
   { emoji: "🍽️", title: "Das Menü", act: ACT4, focus: "Lurch 1",
+    image: "bilder/tuer-21.webp", imageAlt: "Die drei planen das Weihnachtsmenü",
     story: [
       "Es ist Zeit, einen Plan zu schmieden. Lurch 1 sitzt am Küchentisch, das Klemmbrett vor sich. Doch diesmal lächelt er. Nicht aus Pflichtgefühl, sondern aus echter Zuversicht.",
       ["Lurch 1", "„Wir laden ihn ein. Das ist die richtige Antwort auf seinen Brief. Er hat sich nicht getraut, uns direkt zu fragen. Also tun wir es für ihn.“"],
@@ -1318,6 +1338,7 @@ const DOORS = [
 
   /* ---------- 22 ---------- */
   { emoji: "🧦", title: "Der Socken", act: ACT4, focus: "alle drei",
+    image: "bilder/tuer-22.webp", imageAlt: "Lurch 1 und Lurch 2 ziehen den Halben voller Asche hinter der Garderobe hervor",
     story: [
       
       "Am 22. Dezember liegt der Socken wieder auf dem Tisch. Seit dem 2. Dezember hatte jeder der drei ihn mehrfach in der Hand gehabt. Doch niemand hatte sich bisher ernsthaft gefragt, was er eigentlich zu bedeuten hat. Heute wagen sie es endlich.",
@@ -1369,6 +1390,7 @@ const DOORS = [
 
   /* ---------- 23 ---------- */
   { emoji: "🔌", title: "Der Vorabend", act: ACT4, focus: "alle drei",
+    image: "bilder/tuer-23.webp", imageAlt: "Die drei überreichen Herrn Reiher die Einladung",
     story: [
       "Die drei Lurche gehen zu Herrn Reihers Wohnungstür und klopfen. Kurz darauf öffnet sich die Tür.",
       ["Herr Reiher", "„Oh, hallo! K ... kann ich euch irgendwie helfen?“"],
@@ -1434,6 +1456,7 @@ const DOORS = [
 
   /* ---------- 24 ---------- */
   { emoji: "🎄", title: "Inspektion", act: FINALE, focus: "alle",
+    image: "bilder/tuer-24.webp", imageAlt: "Weihnachtsessen mit Herrn Reiher und Frau Kröte",
     story: [
       "Der 24. Dezember, 17:58 Uhr. Die letzten Kleinigkeiten werden noch erledigt. Lurch 1 kontrolliert ein letztes Mal den Tisch, Lurch 2 wirft einen prüfenden Blick auf die Lichterkette und der Halbe versucht, die letzten Weihnachtskugeln an ihren Platz zu bringen.",
       "Es ist 18:00 Uhr. Es klopft. Herr Reiher steht vor der Tür, das Notizbuch in der einen Hand und ein kleines Päckchen in der anderen. Er ist pünktlich.",
@@ -1522,6 +1545,11 @@ function saveOpened(set) {
 }
 
 const opened = loadOpened();
+function isPastDay(n) {
+  if (ALLE_TUEREN_OFFEN && !urlTest) return false;
+  const t = today();
+  return (t.month === 11 && n < t.day) || t.month === 0;
+}
 const maxDay = unlockedUntil();
 const cal = document.getElementById("calendar");
 
@@ -1536,7 +1564,8 @@ ORDER.forEach((n, idx) => {
   if (BIG_DOORS.includes(n)) slot.classList.add("big", n === 6 ? "b-rose" : "b-mint");
   if (n > maxDay) slot.classList.add("locked");
   if (!ALLE_TUEREN_OFFEN && n === maxDay && today().month === 11) slot.classList.add("today");
-  if (opened.has(n) && n <= maxDay) slot.classList.add("open");
+  /* Türchen vergangener Tage bleiben automatisch offen (z. B. am 3. sind 1 und 2 offen) */
+  if ((opened.has(n) || isPastDay(n)) && n <= maxDay) slot.classList.add("open");
 
   slot.innerHTML = `
     <div class="inside">${DOORS[n-1].emoji}</div>
